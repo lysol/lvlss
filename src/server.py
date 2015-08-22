@@ -8,7 +8,7 @@ from time import sleep
 
 class LvlssServer:
 
-    how_nice = 0.010
+    how_nice = 0.030
 
     def __init__(self, host='localhost', port=19820):
         self.host = host
