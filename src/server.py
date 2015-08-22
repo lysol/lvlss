@@ -1,6 +1,6 @@
 import socket
 import select
-from serverclient import LvlssServerClient
+from serverclient import LvlssServerClient, ClientDisconnected
 import json
 from controller import Controller, ControllerException
 from time import sleep
@@ -19,6 +19,14 @@ class LvlssServer:
         self.server_socket = None
         self.running = False
         self.controller = Controller()
+
+    def remove_client(self, client):
+        print "Removing client: ", client
+        sindex = self.socket_list.index(client.socket)
+        self.socket_list[sindex].close()
+        del(self.clients[self.socket_list[sindex]])
+        del(self.socket_list[sindex])
+        self.controller.remove_player(client.player_id)
 
     def handle_command_result(self, client, result):
         if result.event_name == 'quit':
@@ -72,7 +80,11 @@ class LvlssServer:
                 else:
                     # client data
                     client = self.clients[read_socket]
-                    self.handle_lines(client, client.readlines())
+                    try:
+                        self.handle_lines(client, client.readlines())
+                    except ClientDisconnected:
+                        self.remove_client(client)
+
             self.controller.check_sync()
             sleep(self.how_nice)
 

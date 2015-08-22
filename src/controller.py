@@ -38,6 +38,9 @@ class Controller(object):
     def check_sync(self):
         self.world.check_sync()
 
+    def remove_player(self, name):
+        self.world.remove_player(name)
+
     def __init__(self, datalocation="/tmp/lvlssworld"):
         self.world = World(datalocation)
         self.commands = {}

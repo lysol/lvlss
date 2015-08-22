@@ -2,6 +2,8 @@ from uuid import uuid4
 import socket
 import json
 
+class ClientDisconnected(Exception):
+    pass
 
 class LvlssServerClient:
 
@@ -16,8 +18,12 @@ class LvlssServerClient:
         while True:
             try:
                 buffer = self.socket.recv(4096)
-            except socket.error:
-                break
+                if not buffer:
+                    raise ClientDisconnected()
+            except socket.error as e:
+                if e.errno == 35:  # Resource temp. unavailable, done reading for now
+                    break
+                raise ClientDisconnected()
             self.buffer += buffer
         buf = self.buffer.split("\n")
         if self.buffer[-1] != "\n":

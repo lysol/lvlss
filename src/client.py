@@ -83,7 +83,7 @@ class LvlssClient:
 
             sleep(self.how_nice)
 
-        self.server_socket.close()
+        self.socket.close()
 
 if __name__ == "__main__":
     client = LvlssClient()

@@ -17,6 +17,9 @@ class World(object):
         self.players[name] = Player(name)
 
     def remove_player(self, player):
+        if type(player) == str or type(player) == unicode:
+            player = self.players[player]
+        print "Removing player: ", player.name
         del(self.players[player.name])
 
     def init_lobjects(self):
