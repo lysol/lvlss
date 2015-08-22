@@ -7,6 +7,6 @@ class Quit(Command):
     shortname = 'quit'
     name = 'Disconnect from the game'
 
-    def invoke(self, player, **kwargs):
+    def invoke(self, player, *args):
         self.world.remove_player(player)
         return CommandResult('quit')

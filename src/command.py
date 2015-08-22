@@ -10,7 +10,7 @@ class Command(object):
     def all_commands(self):
         return commands.all_commands
 
-    def invoke(self, player, **kwargs):
+    def invoke(self, player, *args):
         raise NotImplementedError("Please define this.")
 
     def __init__(self, world):

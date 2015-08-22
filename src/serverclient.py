@@ -10,8 +10,7 @@ class LvlssServerClient:
             print line
 
     def writelines(self, lines):
-        for line in lines:
-            self.socket.send(json.dumps({"clientcrap": line}) + "\n")
+        self.socket.send(json.dumps({"event_name": "clientcrap", "lines": lines}) + "\n")
 
     def readlines(self):
         while True:

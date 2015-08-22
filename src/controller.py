@@ -19,17 +19,15 @@ class Controller(object):
         else:
             player = None
 
-        print data, self.commands
-
         try:
             command = self.commands[data['command']]
         except KeyError:
             raise ControllerException("No such command")
             return
 
-        print 'command: ', command
-        result = command.invoke(player, **data['data'])
-        print 'commandResult: ', result
+        if 'args' not in data:
+            data['args'] = []
+        result = command.invoke(player, *data['args'])
         self.handle_result(player, result)
         return result
 
@@ -37,9 +35,10 @@ class Controller(object):
         self.commands = {com.shortname: com(self.world) for
                          com in commands.all_commands}
 
-    def __init__(self, world=None):
-        if world is None:
-            world = World()
-        self.world = world
+    def check_sync(self):
+        self.world.check_sync()
+
+    def __init__(self, datalocation="/tmp/lvlssworld"):
+        self.world = World(datalocation)
         self.commands = {}
         self.initialize_commands()

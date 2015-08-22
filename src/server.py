@@ -3,9 +3,12 @@ import select
 from serverclient import LvlssServerClient
 import json
 from controller import Controller, ControllerException
+from time import sleep
 
 
 class LvlssServer:
+
+    how_nice = 0.010
 
     def __init__(self, host='localhost', port=19820):
         self.host = host
@@ -26,7 +29,6 @@ class LvlssServer:
         elif result.event_name == 'clientcrap':
             client.writelines(result.lines)
         elif result.event_name == 'name_set':
-            print "the result is ", dir(result), result.player_name
             client.player_id = result.player_name
 
     def handle_line(self, client, line):
@@ -71,6 +73,8 @@ class LvlssServer:
                     # client data
                     client = self.clients[read_socket]
                     self.handle_lines(client, client.readlines())
+            self.controller.check_sync()
+            sleep(self.how_nice)
 
         self.server_socket.close()
 
