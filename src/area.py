@@ -15,3 +15,4 @@ class Area(object):
         self.description = description
         self.links_to = []
         self.lobjects = []
+        self.players = []

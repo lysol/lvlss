@@ -2,6 +2,7 @@ from player import Player
 from lobject import LObject
 from lvalue import LValue
 from area import Area
+from event import Event
 import shelve
 import os
 
@@ -11,10 +12,13 @@ class World(object):
     SYNC_CYCLES_CHECK = 2000
 
     def player_name_exists(self, name):
-        return name in self.players
+        return name in self.players and self.players[name].signed_in
 
     def add_player(self, name):
-        self.players[name] = Player(self, name)
+        if name not in self.players:
+            self.players[name] = Player(self, name)
+        self.players[name].set_location(self.areas[0])
+        self.players[name].signed_in = True
 
     def remove_player(self, player):
         if player is None:
@@ -22,7 +26,7 @@ class World(object):
         if type(player) == str or type(player) == unicode:
             player = self.players[player]
         print "Removing player: ", player.name
-        del(self.players[player.name])
+        self.players[player].signed_in = False
 
     def init_lobjects(self):
         # this will be an initialization routine for the first objects
@@ -53,6 +57,13 @@ class World(object):
     def stop(self):
         self.sync()
         self.datastore.close()
+
+    def tell_player(self, player, msg):
+        if type(player) != Player:
+            player = self.players[player]
+        if type(msg) != list:
+            msg = [msg,]
+        self.controller.store_event(player.name, Event('clientcrap', {'lines': msg}))
 
     def __init__(self, controller, datalocation):
         print datalocation

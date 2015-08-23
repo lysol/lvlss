@@ -11,7 +11,11 @@ class Player(object):
     def set_world(self, world):
         setattr(self, 'world', world)
 
+    def set_location(self, area):
+        self.location = area
+
     def __init__(self, world, name):
         self.name = name
         self.inventory = []
         self.world = world
+        self.signed_in = False

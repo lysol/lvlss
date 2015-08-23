@@ -14,5 +14,8 @@ class Command(object):
     def invoke(self, player, *args):
         raise NotImplementedError("Please define this.")
 
+    def tell_player(self, player, msg):
+        return self.world.tell_player(player, msg)
+
     def __init__(self, world):
         self.world = world
