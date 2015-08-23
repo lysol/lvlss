@@ -14,9 +14,11 @@ class World(object):
         return name in self.players
 
     def add_player(self, name):
-        self.players[name] = Player(name)
+        self.players[name] = Player(self, name)
 
     def remove_player(self, player):
+        if player is None:
+            return
         if type(player) == str or type(player) == unicode:
             player = self.players[player]
         print "Removing player: ", player.name
@@ -47,10 +49,11 @@ class World(object):
         self.datastore['areas'] = self.areas
         print 'Done.'
 
-    def __init__(self, datalocation):
+    def __init__(self, controller, datalocation):
         game_exists = os.path.exists(datalocation)
         self.datastore = shelve.open(datalocation)
         self.sync_counter = 0
+        self.controller = controller
         if game_exists:
             self.players = self.datastore['players']
             self.lobjects = self.datastore['lobjects']

@@ -39,3 +39,4 @@ class LvlssServerClient:
         self.buffer = ''
         self.id = uuid4()
         self.player_id = None
+        self.authenticated = False

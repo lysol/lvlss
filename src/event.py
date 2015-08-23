@@ -1,6 +1,6 @@
 
 
-class CommandResult(object):
+class Event(object):
 
     def __init__(self, event_name, data={}):
         self.event_name = event_name

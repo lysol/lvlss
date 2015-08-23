@@ -1,5 +1,5 @@
 from command import Command
-from command_result import CommandResult
+from event import Event
 
 
 class Quit(Command):
@@ -9,4 +9,4 @@ class Quit(Command):
 
     def invoke(self, player, *args):
         self.world.remove_player(player)
-        return CommandResult('quit')
+        return Event('quit')

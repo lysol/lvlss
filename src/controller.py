@@ -1,15 +1,35 @@
 from world import World
+from event import Event
 import commands
 
 
 class ControllerException(Exception):
-    pass
+
+    UNKNOWN_COMMAND = 0
+    COMMAND_NOT_ALLOWED = 1
+
+    messages = {
+        0: "Unknown command.",
+        1: "You must sign in first."
+    }
+    
+    def __init__(self, value):
+        self.value = value
+        self.msg = self.messages[value]
 
 
 class Controller(object):
 
-    def handle_result(self, player, result):
-        pass
+    def store_event(self, target, event):
+        if target not in self.event_backlog:
+            self.event_backlog[target] = []
+        self.event_backlog[target].append(event)
+
+    def get_event(self, target):
+        if target in self.event_backlog and len(self.event_backlog[target]) > 0:
+            return self.event_backlog[target].pop()
+        else:
+            return None  
 
     def handle_data(self, player_id, data):
         # this is needed for the set_name command
@@ -22,14 +42,16 @@ class Controller(object):
         try:
             command = self.commands[data['command']]
         except KeyError:
-            raise ControllerException("No such command")
+            raise ControllerException(ControllerException.UNKNOWN_COMMAND)
             return
 
         if 'args' not in data:
             data['args'] = []
-        result = command.invoke(player, *data['args'])
-        self.handle_result(player, result)
-        return result
+        if player is None and not command.unauthenticated:
+            raise ControllerException(ControllerException.COMMAND_NOT_ALLOWED)
+        event = command.invoke(player, *data['args'])
+
+        return event
 
     def initialize_commands(self):
         self.commands = {com.shortname: com(self.world) for
@@ -41,7 +63,9 @@ class Controller(object):
     def remove_player(self, name):
         self.world.remove_player(name)
 
-    def __init__(self, datalocation="/tmp/lvlssworld"):
-        self.world = World(datalocation)
+    def __init__(self, server, datalocation="/tmp/lvlssworld"):
+        self.world = World(self, datalocation)
         self.commands = {}
         self.initialize_commands()
+        self.server = server
+        self.event_backlog = {}

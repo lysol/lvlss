@@ -1,5 +1,5 @@
 from command import Command
-from command_result import CommandResult
+from event import Event
 
 
 class Who(Command):
@@ -7,5 +7,5 @@ class Who(Command):
     name = 'Who is on the server?'
 
     def invoke(self, player, *args):
-        result = [self.world.players[p].name for p in self.world.players]
-        return CommandResult('clientcrap', {'lines': result})
+        event = [self.world.players[p].name for p in self.world.players]
+        return Event('clientcrap', {'lines': event})

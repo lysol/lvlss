@@ -5,6 +5,7 @@ class Command(object):
 
     shortname = 'command'
     name = 'Reference Command'
+    unauthenticated = False
 
     @property
     def all_commands(self):

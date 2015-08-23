@@ -2,6 +2,11 @@
 
 class Player(object):
 
-    def __init__(self, name):
+
+    def send_messages(self, msg):
+        self.world.controller.send_message(self, msg)
+
+    def __init__(self, world, name):
         self.name = name
         self.inventory = []
+        self.world = world
