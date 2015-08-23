@@ -2,6 +2,9 @@
 
 class Area(object):
 
+    def __getstate__(self):
+        return {"name": self.name, "description": self.description, "links_to": self.links_to, "lobjects": self.lobjects}
+
     def link_to(self, area, one_way=False):
         self.links_to.append(area)
         if not one_way:

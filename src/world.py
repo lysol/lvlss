@@ -47,15 +47,25 @@ class World(object):
         self.datastore['players'] = self.players
         self.datastore['lobjects'] = self.lobjects
         self.datastore['areas'] = self.areas
+        self.datastore.sync()
         print 'Done.'
 
+    def stop(self):
+        self.sync()
+        self.datastore.close()
+
     def __init__(self, controller, datalocation):
-        game_exists = os.path.exists(datalocation)
-        self.datastore = shelve.open(datalocation)
+        print datalocation
+        game_exists = os.path.exists(datalocation + '.db')
+        self.datastore = shelve.open(datalocation, writeback=True)
         self.sync_counter = 0
         self.controller = controller
         if game_exists:
+            print 'Loading existing game.'
             self.players = self.datastore['players']
+            for p in self.players:
+                print 'setting world for %s' % p
+                self.players[p].set_world(self)
             self.lobjects = self.datastore['lobjects']
             self.areas = self.datastore['areas']
         else:

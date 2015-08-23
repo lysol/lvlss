@@ -71,35 +71,37 @@ class LvlssServer:
         self.socket_list.append(self.server_socket)
         self.running = True
 
-        while self.running:
-            read_sockets, _, __ = select.select(self.socket_list, [], [], 0)
-            for read_socket in read_sockets:
-                # new request
-                if read_socket == self.server_socket:
-                    sockfd, addr = self.server_socket.accept()
-                    sockfd.setblocking(0)
-                    self.socket_list.append(sockfd)
-                    self.clients[sockfd] = LvlssServerClient(sockfd, *addr)
-                    print "Connection from (%s, %s)" % addr
-                else:
-                    # client data
-                    client = self.clients[read_socket]
-                    try:
-                        self.handle_lines(client, client.readlines())
-                    except ClientDisconnected:
-                        self.remove_client(client)
+        try:
+            while self.running:
+                read_sockets, _, __ = select.select(self.socket_list, [], [], 0)
+                for read_socket in read_sockets:
+                    # new request
+                    if read_socket == self.server_socket:
+                        sockfd, addr = self.server_socket.accept()
+                        sockfd.setblocking(0)
+                        self.socket_list.append(sockfd)
+                        self.clients[sockfd] = LvlssServerClient(sockfd, *addr)
+                        print "Connection from (%s, %s)" % addr
+                    else:
+                        # client data
+                        client = self.clients[read_socket]
+                        try:
+                            self.handle_lines(client, client.readlines())
+                        except ClientDisconnected:
+                            self.remove_client(client)
 
-            for c in filter(lambda c: self.clients[c].authenticated, self.clients):
-                client = self.clients[c]
-                event = self.controller.get_event(client.player_id)
-                if event is not None:
-                    self.handle_event(client, event)
+                for c in filter(lambda c: self.clients[c].authenticated, self.clients):
+                    client = self.clients[c]
+                    event = self.controller.get_event(client.player_id)
+                    if event is not None:
+                        self.handle_event(client, event)
 
 
-            self.controller.check_sync()
-            sleep(self.how_nice)
-
-        self.server_socket.close()
+                self.controller.check_sync()
+                sleep(self.how_nice)
+        except KeyboardInterrupt:
+            self.controller.world.stop()
+            self.server_socket.close()
 
 if __name__ == "__main__":
     server = LvlssServer()
