@@ -26,7 +26,7 @@ class World(object):
         if type(player) == str or type(player) == unicode:
             player = self.players[player]
         print "Removing player: ", player.name
-        self.players[player].signed_in = False
+        player.signed_in = False
 
     def init_lobjects(self):
         # this will be an initialization routine for the first objects

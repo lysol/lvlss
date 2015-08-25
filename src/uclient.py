@@ -118,7 +118,7 @@ class LvlssClient(object):
         if decoded['event_name'] == 'clientcrap':
             for line in decoded['lines']:
                 pos = body.focus_position
-                self.walker.insert(pos + 1, urwid.Text(line))
+                self.walker.append(urwid.Text(line))
 
 
     def __init__(self, host='localhost', port=19820):
