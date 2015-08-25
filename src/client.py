@@ -49,7 +49,7 @@ class LvlssClient:
         self.running = True
 
         socket_list = [sys.stdin, self.socket]
-         
+
         # Get the list sockets which are readable
         read_sockets, write_sockets, error_sockets = select.select(socket_list , [], [])
 

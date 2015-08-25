@@ -2,8 +2,12 @@ from uuid import uuid4
 import socket
 import json
 
+
 class ClientDisconnected(Exception):
-    pass
+
+    def __init__(self, underlying=None):
+        self.underlying = underlying
+
 
 class LvlssServerClient:
 
@@ -12,18 +16,23 @@ class LvlssServerClient:
             print line
 
     def writelines(self, lines):
-        self.socket.send(json.dumps({"event_name": "clientcrap", "lines": lines}) + "\n")
+        print lines
+        data = {"event_name": "clientcrap", "lines": lines}
+        self.socket.send(json.dumps(data) + "\n")
 
     def readlines(self):
         while True:
             try:
                 buffer = self.socket.recv(4096)
+                print "Buffer: %s" % buffer
                 if not buffer:
                     raise ClientDisconnected()
             except socket.error as e:
-                if e.errno == 35:  # Resource temp. unavailable, done reading for now
+                # resource temporarily unavailable
+                if e.errno in (35, 11):
                     break
-                raise ClientDisconnected()
+                print e.msg
+                raise ClientDisconnected(e)
             self.buffer += buffer
         buf = self.buffer.split("\n")
         if self.buffer[-1] != "\n":

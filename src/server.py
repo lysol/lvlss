@@ -6,11 +6,12 @@ from controller import Controller, ControllerException
 from time import sleep
 from event import Event
 
+
 class LvlssServer:
 
-    how_nice = 0.030
+    how_nice = 0.010
 
-    def __init__(self, host='localhost', port=19820):
+    def __init__(self, host='127.0.0.1', port=19820):
         self.host = host
         self.port = port
         self.clients = {}
@@ -29,21 +30,29 @@ class LvlssServer:
         self.controller.remove_player(client.player_id)
 
     def handle_event(self, client, event):
+        if client.authenticated:
+            print "%s> %s" % (client.player_id, event.name)
+        else:
+            print "%s:%d> %s" % (client.host, client.port, event.name)
         if event is None:
             return
-        elif event.event_name == 'quit':
+        elif event.name == 'quit':
             sindex = self.socket_list.index(client.socket)
             self.socket_list[sindex].close()
             del(self.clients[self.socket_list[sindex]])
             del(self.socket_list[sindex])
-        elif event.event_name == 'clientcrap':
+        elif event.name == 'clientcrap':
             client.writelines(event.lines)
-        elif event.event_name == 'name_set':
+        elif event.name == 'name_set':
             client.player_id = event.player_name
             client.authenticated = True
 
     def handle_line(self, client, line):
         # each line is a json payload
+        if client.authenticated:
+            print "%s> %s" % (client.player_id, line)
+        else:
+            print "%s:%d> %s" % (client.host, client.port, line)
         try:
             data = json.loads(line)
             # this is bubbled up if need be
@@ -51,10 +60,12 @@ class LvlssServer:
                 event = self.controller.handle_data(client.player_id, data)
             except ControllerException as e:
                 print e.msg
-                event = Event('clientcrap', {"lines": [e.msg,]})
-                self.handle_event(client, event)
+                event = Event('clientcrap', {"lines": [e.msg, ]})
+                if event is not None:
+                    self.handle_event(client, event)
                 return
-            self.handle_event(client, event)
+            if event is not None:
+                self.handle_event(client, event)
         except ValueError:
             print "Malformed payload from client ignored."
 
@@ -73,7 +84,8 @@ class LvlssServer:
 
         try:
             while self.running:
-                read_sockets, _, __ = select.select(self.socket_list, [], [], 0)
+                read_sockets, _, __ = select.select(self.socket_list,
+                                                    [], [], 0)
                 for read_socket in read_sockets:
                     # new request
                     if read_socket == self.server_socket:
@@ -88,14 +100,15 @@ class LvlssServer:
                         try:
                             self.handle_lines(client, client.readlines())
                         except ClientDisconnected:
+                            print 'Client disconnected.'
                             self.remove_client(client)
 
-                for c in filter(lambda c: self.clients[c].authenticated, self.clients):
+                for c in filter(lambda c: self.clients[c].authenticated,
+                                self.clients):
                     client = self.clients[c]
                     event = self.controller.get_event(client.player_id)
                     if event is not None:
                         self.handle_event(client, event)
-
 
                 self.controller.check_sync()
                 sleep(self.how_nice)
