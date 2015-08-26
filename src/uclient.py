@@ -61,23 +61,12 @@ class LvlssClient(object):
         command = {"command": tokens[0], "args": tokens[1:]}
         command = json.dumps(command) + "\n"
         res = self.socket.send(command)
+        self.append("> %s" % self.editbox.edit_text)
         self.editbox.set_edit_text('')
 
     def handle_input_cb(self, key):
         if key == 'esc':
             raise urwid.ExitMainLoop()
-        # elif key == 'enter':
-        #     # send shit
-        #     data = footer.text
-        #     tokens = self.parse_line(data.strip())
-        #     command = {"command": tokens[0], "args": tokens[1:]}
-        #     command = json.dumps(command) + "\n"
-
-        #     if data:
-        #         res = self.socket.send(command)
-        #     footer.set_text('')
-        # else:
-        #     footer.set_text(footer.text + key)
 
     def read_server_data(self):
         data = self.socket.recv(4096)

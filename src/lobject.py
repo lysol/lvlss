@@ -6,7 +6,8 @@ class LObject:
     def set_location(self, location):
         self.location = location
 
-    def __init__(self, name, value):
+    def __init__(self, name, description=None, value=0):
         self.name = name
         self.value = value
+        self.description = description
         self.location = None

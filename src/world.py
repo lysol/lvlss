@@ -30,7 +30,7 @@ class World(object):
     def init_lobjects(self):
         # this will be an initialization routine for the first objects
         self.lobjects = []
-        self.areas[0].lobjects.append(LObject('brick', 20))
+        self.areas[0].lobjects.append(LObject('brick', value=20))
 
     def init_areas(self):
         self.areas.append(Area('Quarry', 'You are in an empty quarry.'))

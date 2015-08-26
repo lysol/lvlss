@@ -7,5 +7,6 @@ from go import Go
 from take import Take
 from inventory import Inventory
 from drop import Drop
+from make import Make
 
-all_commands = (Quit, SetName, Who, Say, Look, Go, Take, Inventory, Drop)
+all_commands = (Quit, SetName, Who, Say, Look, Go, Take, Inventory, Drop, Make)

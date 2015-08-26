@@ -9,6 +9,7 @@ class CommandException(Exception):
     IMPOSSIBLE_PATH = 3
     NO_ITEM_HERE = 4
     NO_ITEM_IN_INVENTORY = 5
+    NEED_A_NUMBER = 6
 
     messages = {
         0: "Unknown command.",
@@ -16,12 +17,16 @@ class CommandException(Exception):
         2: "You must provide more arguments to this command.",
         3: "You can't go that way.",
         4: "That item is not here.",
-        5: "That item is not in your inventory."
+        5: "That item is not in your inventory.",
+        6: "The argument at position %d must be a number."
     }
 
-    def __init__(self, value):
+    def __init__(self, value, interp=None):
         self.value = value
-        self.msg = self.messages[value]
+        if interp is None:
+            self.msg = self.messages[value]
+        else:
+            self.msg = self.messages[value] % interp
 
 
 def is_command(func):
