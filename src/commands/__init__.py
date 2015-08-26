@@ -8,5 +8,6 @@ from take import Take
 from inventory import Inventory
 from drop import Drop
 from make import Make
+from landfill import Landfill
 
-all_commands = (Quit, SetName, Who, Say, Look, Go, Take, Inventory, Drop, Make)
+all_commands = (Quit, SetName, Who, Say, Look, Go, Take, Inventory, Drop, Make, Landfill)

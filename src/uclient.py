@@ -7,12 +7,12 @@ class LvlssParseError(Exception):
     pass
 
 
-class LvlssFrame(urwid.Frame):
+class LvlssOverlay(urwid.Overlay):
 
     entercb = []
 
     def keypress(self, size, key):
-        key = super(LvlssFrame, self).keypress(size, key)
+        key = super(LvlssOverlay, self).keypress(size, key)
         if key == 'enter':
             for cb in self.entercb:
                 cb()
@@ -95,12 +95,17 @@ class LvlssClient(object):
 
         self.walker = urwid.SimpleFocusListWalker([
             urwid.Text('Welcome to lvlss.')])
-        self.master_frame = LvlssFrame(body=urwid.ListBox(self.walker),
+
+        self.master_frame = urwid.Frame(body=urwid.ListBox(self.walker),
                                        header=None,
                                        footer=self.editbox,
                                        focus_part='footer')
-        self.master_frame.register_enter_db(self.handle_enter)
-        self.loop = urwid.MainLoop(self.master_frame,
+        self.main = LvlssOverlay(self.master_frame, urwid.SolidFill(u'\N{MEDIUM SHADE}'),
+                                  align="center", width=('relative', 200),
+                                  valign="middle", height=('relative', 200),
+                                  min_width=20, min_height=9)
+        self.main.register_enter_db(self.handle_enter)
+        self.loop = urwid.MainLoop(self.main,
                                    unhandled_input=self.handle_input_cb,
                                    handle_mouse=False)
 
