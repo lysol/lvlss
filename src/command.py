@@ -7,18 +7,22 @@ class CommandException(Exception):
     COMMAND_NOT_ALLOWED = 1
     NOT_ENOUGH_ARGUMENTS = 2
     IMPOSSIBLE_PATH = 3
+    NO_ITEM_HERE = 4
+    NO_ITEM_IN_INVENTORY = 5
 
     messages = {
         0: "Unknown command.",
         1: "You must sign in first.",
         2: "You must provide more arguments to this command.",
-        3: "You can't go that way."
+        3: "You can't go that way.",
+        4: "That item is not here.",
+        5: "That item is not in your inventory."
     }
-    
+
     def __init__(self, value):
         self.value = value
         self.msg = self.messages[value]
-        
+
 
 def is_command(func):
     if callable(func):
@@ -31,8 +35,10 @@ def is_command(func):
         return _invoker
     else:
         name = func
+
         def _invoker2(func2):
             func = func2
+
             def _invoker(obj, player, *args):
                 result = func(obj, player, *args)
                 return result
@@ -56,7 +62,8 @@ class Command(object):
         self.world = world
 
     def _command_methods(self):
-        names = filter(lambda m: hasattr(getattr(self, m), 'command_name'), dir(self))
+        names = filter(lambda m: hasattr(getattr(self, m), 'command_name'),
+                       dir(self))
         return [getattr(self, n) for n in names]
 
     def invoked_by(self, name):

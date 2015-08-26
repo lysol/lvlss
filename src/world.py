@@ -1,6 +1,5 @@
 from player import Player
 from lobject import LObject
-from lvalue import LValue
 from area import Area
 from event import Event
 import shelve
@@ -31,7 +30,7 @@ class World(object):
     def init_lobjects(self):
         # this will be an initialization routine for the first objects
         self.lobjects = []
-        self.lobjects.append(LObject('brick', 20))
+        self.areas[0].lobjects.append(LObject('brick', 20))
 
     def init_areas(self):
         self.areas.append(Area('Quarry', 'You are in an empty quarry.'))
@@ -62,8 +61,9 @@ class World(object):
         if type(player) != Player:
             player = self.players[player]
         if type(msg) != list:
-            msg = [msg,]
-        self.controller.store_event(player.name, Event('clientcrap', {'lines': msg}))
+            msg = [msg, ]
+        self.controller.store_event(player.name, Event('clientcrap',
+                                                       {'lines': msg}))
 
     def __init__(self, controller, datalocation):
         game_exists = os.path.exists(datalocation + '.db')
@@ -80,8 +80,7 @@ class World(object):
             self.areas = self.datastore['areas']
         else:
             self.players = {}
-            self.lobjects = []
-            self.init_lobjects()
             self.areas = []
             self.init_areas()
+            self.init_lobjects()
             self.sync()
