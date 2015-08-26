@@ -1,4 +1,4 @@
-from command import Command
+from command import Command, is_command
 from event import Event
 
 class Say(Command):
@@ -6,7 +6,8 @@ class Say(Command):
     shortname = 'say'
     name = 'Say something to someone, or in the public chat'
 
-    def invoke(self, player, *args):
+    @is_command
+    def say(self, player, *args):
         if args[0] in self.world.players:
             prefix = "(private) <%s> " % player.name
             # a message to a user

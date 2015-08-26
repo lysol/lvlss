@@ -1,4 +1,4 @@
-from command import Command
+from command import Command, is_command
 from event import Event
 
 
@@ -7,9 +7,9 @@ class Look(Command):
     shortname = 'look'
     name = 'Look around you'
 
-    def invoke(self, player, *args):
-        self.tell_player(player, [
-            "You are in %s:" % player.location.name, 
-            "", 
-            player.location.description
-            ])
+    @is_command
+    def look(self, player, *args):
+        lines = [player.location.description, '', 'Places nearby:']
+        other_areas = player.location.links_to
+        lines.extend(['%d: %s' % (i + 1, area.name) for i, area in enumerate(other_areas)])
+        self.tell_player(player, lines)

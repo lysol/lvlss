@@ -2,7 +2,8 @@ import socket
 import select
 from serverclient import LvlssServerClient, ClientDisconnected
 import json
-from controller import Controller, ControllerException
+from controller import Controller
+from command import CommandException
 from time import sleep
 from event import Event
 
@@ -58,7 +59,7 @@ class LvlssServer:
             # this is bubbled up if need be
             try:
                 event = self.controller.handle_data(client.player_id, data)
-            except ControllerException as e:
+            except CommandException as e:
                 print e.msg
                 event = Event('clientcrap', {"lines": [e.msg, ]})
                 if event is not None:

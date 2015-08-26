@@ -1,22 +1,7 @@
 from world import World
 from event import Event
 import commands
-
-
-class ControllerException(Exception):
-
-    UNKNOWN_COMMAND = 0
-    COMMAND_NOT_ALLOWED = 1
-
-    messages = {
-        0: "Unknown command.",
-        1: "You must sign in first."
-    }
-    
-    def __init__(self, value):
-        self.value = value
-        self.msg = self.messages[value]
-
+from command import CommandException
 
 class Controller(object):
 
@@ -34,28 +19,25 @@ class Controller(object):
     def handle_data(self, player_id, data):
         # this is needed for the set_name command
         if player_id is not None:
-            print player_id
             player = self.world.players[player_id]
         else:
             player = None
 
-        try:
-            command = self.commands[data['command']]
-        except KeyError:
-            raise ControllerException(ControllerException.UNKNOWN_COMMAND)
-            return
+        for command in self.commands:
+            if command.invoked_by(data['command']):
+                if 'args' not in data:
+                    data['args'] = []
+                if player is None and not command.unauthenticated:
+                    raise CommandException(CommandException.COMMAND_NOT_ALLOWED)
+                func = command.retrieve(data['command'])
+                event = func(player, *data['args'])
+                return event
+        raise CommandException(CommandException.UNKNOWN_COMMAND)
 
-        if 'args' not in data:
-            data['args'] = []
-        if player is None and not command.unauthenticated:
-            raise ControllerException(ControllerException.COMMAND_NOT_ALLOWED)
-        event = command.invoke(player, *data['args'])
-
-        return event
 
     def initialize_commands(self):
-        self.commands = {com.shortname: com(self.world) for
-                         com in commands.all_commands}
+        self.commands = [com(self.world) for
+                         com in commands.all_commands]
 
     def check_sync(self):
         self.world.check_sync()
@@ -65,7 +47,7 @@ class Controller(object):
 
     def __init__(self, server, datalocation="/tmp/lvlssworld"):
         self.world = World(self, datalocation)
-        self.commands = {}
+        self.commands = []
         self.initialize_commands()
         self.server = server
         self.event_backlog = {}

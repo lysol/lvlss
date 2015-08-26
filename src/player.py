@@ -3,7 +3,11 @@
 class Player(object):
 
     def __getstate__(self):
-        return {"name": self.name, "inventory": self.inventory}
+        return {
+            "name": self.name,
+            "inventory": self.inventory,
+            "signed_in": False
+            }
 
     def send_messages(self, msg):
         self.world.controller.send_message(self, msg)

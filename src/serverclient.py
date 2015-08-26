@@ -16,7 +16,6 @@ class LvlssServerClient:
             print line
 
     def writelines(self, lines):
-        print lines
         data = {"event_name": "clientcrap", "lines": lines}
         self.socket.send(json.dumps(data) + "\n")
 
@@ -24,7 +23,6 @@ class LvlssServerClient:
         while True:
             try:
                 buffer = self.socket.recv(4096)
-                print "Buffer: %s" % buffer
                 if not buffer:
                     raise ClientDisconnected()
             except socket.error as e:

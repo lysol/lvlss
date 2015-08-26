@@ -66,7 +66,6 @@ class World(object):
         self.controller.store_event(player.name, Event('clientcrap', {'lines': msg}))
 
     def __init__(self, controller, datalocation):
-        print datalocation
         game_exists = os.path.exists(datalocation + '.db')
         self.datastore = shelve.open(datalocation, writeback=True)
         self.sync_counter = 0
