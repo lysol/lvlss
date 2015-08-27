@@ -47,9 +47,9 @@ class World(object):
 
     def sync(self):
         print 'Syncing...',
-        self.datastore['players'] = self.players
-        self.datastore['lobjects'] = self.lobjects
-        self.datastore['areas'] = self.areas
+        self.datastore['players'] = dict(self.players)
+        self.datastore['lobjects'] = list(self.lobjects)
+        self.datastore['areas'] = list(self.areas)
         self.datastore.sync()
         print 'Done.'
 
