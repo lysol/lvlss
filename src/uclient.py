@@ -25,6 +25,33 @@ class LvlssOverlay(urwid.Overlay):
 
 class LvlssClient(object):
 
+    def handle_event(self, event):
+        method_name = 'handle_' + event['name']
+        if method_name in dir(self):
+            method = getattr(self, method_name)
+            method(event)
+        else:
+            self.append("Unhandled event: %s" % event['name'])
+
+    def handle_location(self, event):
+        self.append("Your current location: %s" % event['area']['name'])
+        self.append(event['area']['description'])
+
+    def handle_location_areas(self, event):
+        self.append("Nearby places:")
+        for i, area in enumerate(event['areas']):
+            self.append("%d: %s" % (i + 1, area['name']))
+
+    def handle_inventory(self, event):
+        self.append("Inventory:")
+        for i, item in enumerate(event['inventory']):
+            self.append("%d: %s" % (i + 1, item['name']))
+
+    def handle_location_inventory(self, event):
+        self.append("Items here:")
+        for i, item in enumerate(event['inventory']):
+            self.append("%d: %s" % (i + 1, item['name']))
+
     def append(self, text):
         self.walker.append(urwid.Text(text))
 
@@ -76,9 +103,11 @@ class LvlssClient(object):
             self.socket.close()
             raise urwid.ExitMainLoop()
         decoded = json.loads(data)
-        if decoded['event_name'] == 'clientcrap':
+        if decoded['name'] == 'clientcrap':
             for line in decoded['lines']:
                 self.append(line)
+        else:
+            self.handle_event(decoded)
 
     def __init__(self, host='127.0.0.1', port=19820):
         self.host = host

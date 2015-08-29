@@ -42,11 +42,11 @@ class LvlssServer:
             self.socket_list[sindex].close()
             del(self.clients[self.socket_list[sindex]])
             del(self.socket_list[sindex])
-        elif event.name == 'clientcrap':
-            client.writelines(event.lines)
         elif event.name == 'name_set':
             client.player_id = event.player_name
             client.authenticated = True
+        else:
+            client.pass_event(event)
 
     def handle_line(self, client, line):
         # each line is a json payload
@@ -109,6 +109,7 @@ class LvlssServer:
                     client = self.clients[c]
                     event = self.controller.get_event(client.player_id)
                     if event is not None:
+                        print event, event.name
                         self.handle_event(client, event)
 
                 self.controller.check_sync()

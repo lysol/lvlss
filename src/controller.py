@@ -9,10 +9,11 @@ class Controller(object):
         if target not in self.event_backlog:
             self.event_backlog[target] = []
         self.event_backlog[target].append(event)
+        print self.event_backlog
 
     def get_event(self, target):
         if target in self.event_backlog and len(self.event_backlog[target]) > 0:
-            return self.event_backlog[target].pop()
+            return self.event_backlog[target].pop(0)
         else:
             return None  
 

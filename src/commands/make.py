@@ -17,7 +17,7 @@ class Make(Command):
             if len(arglist) > 2:
                 arglist[2] = int(arglist[2])
             else:
-                arglist[2] = 0
+                arglist.append(0)
         except ValueError:
             raise CommandException(CommandException.NOT_A_NUMBER, 3)
 

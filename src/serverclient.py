@@ -19,6 +19,9 @@ class LvlssServerClient:
         data = {"event_name": "clientcrap", "lines": lines}
         self.socket.send(json.dumps(data) + "\n")
 
+    def pass_event(self, event):
+        self.socket.send(json.dumps(event.__dict__) + "\n")
+
     def readlines(self):
         while True:
             try:

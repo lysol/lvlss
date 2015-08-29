@@ -3,6 +3,9 @@ class LObject:
     def __getstate__(self):
         return {"name": self.name, "value": self.value}
 
+    def to_dict(self):
+        return self.__getstate__()
+
     def set_location(self, location):
         self.location = location
 

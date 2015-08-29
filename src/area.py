@@ -10,6 +10,12 @@ class Area(object):
         if not one_way:
             area.links_to.append(self)
 
+    def to_dict(self):
+        return {
+            "name": self.name,
+            "description": self.description
+        }
+
     def __init__(self, name, description):
         self.name = name
         self.description = description

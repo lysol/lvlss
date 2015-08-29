@@ -63,6 +63,18 @@ class Command(object):
     def tell_player(self, player, msg):
         return self.world.tell_player(player, msg)
 
+    def send_player_location(self, player):
+        return self.world.send_player_location(player)
+
+    def send_player_location_areas(self, player):
+        return self.world.send_player_location_areas(player)
+
+    def send_player_inventory(self, player):
+        return self.world.send_player_inventory(player)
+
+    def send_player_location_inventory(self, player):
+        return self.world.send_player_location_inventory(player)
+
     def __init__(self, world):
         self.world = world
 

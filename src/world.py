@@ -65,6 +65,30 @@ class World(object):
         self.controller.store_event(player.name, Event('clientcrap',
                                                        {'lines': msg}))
 
+    def send_player_location(self, player):
+        if type(player) != Player:
+            player = self.players[player]
+        self.controller.store_event(player.name, Event('location', {'area': player.location.to_dict() }))
+
+    def send_player_location_areas(self, player):
+        if type(player) != Player:
+            player = self.players[player]
+        areas = [area.to_dict() for area in player.location.links_to]
+        self.controller.store_event(player.name, Event('location_areas', {'areas': areas }))
+
+    def send_player_inventory(self, player):
+        if type(player) != Player:
+            player = self.players[player]
+        items = [item.to_dict() for item in player.inventory]
+        self.controller.store_event(player.name, Event('inventory', {'inventory': items }))
+
+    def send_player_location_inventory(self, player):
+        if type(player) != Player:
+            player = self.players[player]
+        items = [item.to_dict() for item in player.location.lobjects]
+        self.controller.store_event(player.name, Event('location_inventory', {'inventory': items }))
+
+
     def __init__(self, controller, datalocation):
         game_exists = os.path.exists(datalocation + '.db')
         self.datastore = shelve.open(datalocation, writeback=True)
