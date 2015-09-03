@@ -1,18 +1,68 @@
 import urwid
 import socket
 import json
-
+import sys
 
 class LvlssParseError(Exception):
     pass
 
 
-class LvlssOverlay(urwid.Overlay):
+class ExtendedListBox(urwid.ListBox):
+    """
+        Listbow widget with embeded autoscroll
+    """
+
+    __metaclass__ = urwid.MetaSignals
+    signals = ["set_auto_scroll"]
+
+
+    def set_auto_scroll(self, switch):
+        if type(switch) != bool:
+            return
+        self._auto_scroll = switch
+        urwid.emit_signal(self, "set_auto_scroll", switch)
+
+
+    auto_scroll = property(lambda s: s._auto_scroll, set_auto_scroll)
+
+
+    def __init__(self, body):
+        urwid.ListBox.__init__(self, body)
+        self.auto_scroll = True
+
+
+    def switch_body(self, body):
+        if self.body:
+            urwid.disconnect_signal(body, "modified", self._invalidate)
+
+        self.body = body
+        self._invalidate()
+
+        urwid.connect_signal(body, "modified", self._invalidate)
+
+
+    def keypress(self, size, key):
+        urwid.ListBox.keypress(self, size, key)
+
+        if key in ("page up", "page down"):
+            if self.get_focus()[1] == len(self.body) - 1:
+                self.auto_scroll = True
+            else:
+                self.auto_scroll = False
+
+
+    def scroll_to_bottom(self):
+        if self.auto_scroll:
+            # at bottom -> scroll down
+            self.set_focus(len(self.body) - 1)
+
+
+class LvlssPile(urwid.Pile):
 
     entercb = []
 
     def keypress(self, size, key):
-        key = super(LvlssOverlay, self).keypress(size, key)
+        key = super(LvlssFrame, self).keypress(size, key)
         if key == 'enter':
             for cb in self.entercb:
                 cb()
@@ -53,7 +103,7 @@ class LvlssClient(object):
             self.append("%d: %s" % (i + 1, item['name']))
 
     def append(self, text):
-        self.walker.append(urwid.Text(text))
+        self.lines.append(urwid.Text(text))
 
     def parse_line(self, line):
         escaped = False
@@ -86,8 +136,7 @@ class LvlssClient(object):
         data = self.editbox.edit_text
         tokens = self.parse_line(data.strip())
         command = {"command": tokens[0], "args": tokens[1:]}
-        command = json.dumps(command) + "\n"
-        res = self.socket.send(command)
+        self.send_command(command)
         self.append("> %s" % self.editbox.edit_text)
         self.editbox.set_edit_text('')
 
@@ -109,7 +158,10 @@ class LvlssClient(object):
         else:
             self.handle_event(decoded)
 
-    def __init__(self, host='127.0.0.1', port=19820):
+    def send_command(self, data):
+        self.socket.send(json.dumps(data) + "\n")
+
+    def __init__(self, nick, host='127.0.0.1', port=19820):
         self.host = host
         self.port = port
         self.running = False
@@ -121,28 +173,19 @@ class LvlssClient(object):
 
         self.editbox = urwid.Edit(self.area + '> ')
         # urwid.connect_signal(self.editbox, 'change', self.handle_input_cb)
-
-        self.walker = urwid.SimpleFocusListWalker([
-            urwid.Text('Welcome to lvlss.')])
-
-        self.master_frame = urwid.Frame(body=urwid.ListBox(self.walker),
-                                       header=None,
-                                       footer=self.editbox,
-                                       focus_part='footer')
-        self.main = LvlssOverlay(self.master_frame, urwid.SolidFill(u'\N{MEDIUM SHADE}'),
-                                  align="center", width=('relative', 200),
-                                  valign="middle", height=('relative', 200),
-                                  min_width=20, min_height=9)
-        self.main.register_enter_db(self.handle_enter)
-        self.loop = urwid.MainLoop(self.main,
+        self.lines = [urwid.Text('Welcome to lvlss.'), ]
+        self.master_frame = LvlssPile([('weight', 99, ExtendedListBox(self.lines)), (1, self.editbox)], focus_item=self.editbox)
+        self.master_frame.register_enter_db(self.handle_enter)
+        self.loop = urwid.MainLoop(self.master_frame,
                                    unhandled_input=self.handle_input_cb,
                                    handle_mouse=False)
 
         self.loop.watch_file(self.socket, self.read_server_data)
+        self.send_command({'command': 'nick', 'args': [nick]})
 
     def start(self):
         self.loop.run()
 
 if __name__ == "__main__":
-    client = LvlssClient()
+    client = LvlssClient(sys.argv[1])
     client.start()

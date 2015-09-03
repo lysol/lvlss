@@ -109,7 +109,6 @@ class LvlssServer:
                     client = self.clients[c]
                     event = self.controller.get_event(client.player_id)
                     if event is not None:
-                        print event, event.name
                         self.handle_event(client, event)
 
                 self.controller.check_sync()
