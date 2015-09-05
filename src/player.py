@@ -20,6 +20,6 @@ class Player(object):
 
     def __init__(self, world, name):
         self.name = name
-        self.inventory = []
+        self.inventory = {}
         self.world = world
         self.signed_in = False

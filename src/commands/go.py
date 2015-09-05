@@ -24,10 +24,9 @@ class Go(Command):
     def go(self, player, *args):
         if len(args) == 0:
             raise CommandException(CommandException.NOT_ENOUGH_ARGUMENTS)
-        area_index = int(args[0]) - 1
-        if area_index < len(player.location.links_to):
-            player.location = player.location.links_to[area_index]
-            lines = [player.location.description]
+        area_id = args[0]
+        if area_id in player.location.links_to:
+            player.location = player.location.links_to[area_id]
             # hacky thing....maybe needs a better interface
             look = Look(self.world)
             return look.look(player)

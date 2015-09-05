@@ -4,6 +4,8 @@ from area import Area
 from event import Event
 import shelve
 import os
+import lupa
+from lupa import LuaRuntime
 
 
 class World(object):
@@ -16,7 +18,7 @@ class World(object):
     def add_player(self, name):
         if name not in self.players:
             self.players[name] = Player(self, name)
-        self.players[name].set_location(self.areas[0])
+        self.players[name].set_location(self.areas[self.areas.keys()[0]])
         self.players[name].signed_in = True
 
     def remove_player(self, player):
@@ -29,15 +31,17 @@ class World(object):
 
     def init_lobjects(self):
         # this will be an initialization routine for the first objects
-        self.lobjects = []
-        self.areas[0].lobjects.append(LObject('brick', value=20))
+        brick = LObject('brick', value=20)
+        self.areas[self.areas.keys()[0]].lobjects[brick.id] = brick
 
     def init_areas(self):
-        self.areas.append(Area('Quarry', 'You are in an empty quarry.'))
-        self.areas.append(Area('Quarry pond',
-                               'You are wading in fetid water '
-                               'inside of the quarry.'))
-        self.areas[0].link_to(self.areas[1])
+        quarry = Area('Quarry', 'You are in an empty quarry.')
+        quarry_pond = Area('Quarry pond',
+                           'You are wading in fetid water '
+                           'inside of the quarry.')
+        quarry.link_to(quarry_pond)
+        self.areas[quarry.id] = quarry
+        self.areas[quarry_pond.id] = quarry_pond
 
     def check_sync(self):
         self.sync_counter += 1
@@ -48,8 +52,7 @@ class World(object):
     def sync(self):
         print 'Syncing...',
         self.datastore['players'] = dict(self.players)
-        self.datastore['lobjects'] = list(self.lobjects)
-        self.datastore['areas'] = list(self.areas)
+        self.datastore['areas'] = dict(self.areas)
         self.datastore.sync()
         print 'Done.'
 
@@ -68,26 +71,35 @@ class World(object):
     def send_player_location(self, player):
         if type(player) != Player:
             player = self.players[player]
-        self.controller.store_event(player.name, Event('location', {'area': player.location.to_dict() }))
+        self.controller.store_event(player.name, Event('location',
+                                                       {'area': player.location.to_dict() }))
 
     def send_player_location_areas(self, player):
         if type(player) != Player:
             player = self.players[player]
-        areas = [area.to_dict() for area in player.location.links_to]
-        self.controller.store_event(player.name, Event('location_areas', {'areas': areas }))
+        areas = [area.to_dict() for area in player.location.links_to.values()]
+        self.controller.store_event(player.name,
+                                    Event('location_areas',
+                                    {'areas': areas }))
 
     def send_player_inventory(self, player):
         if type(player) != Player:
             player = self.players[player]
-        items = [item.to_dict() for item in player.inventory]
-        self.controller.store_event(player.name, Event('inventory', {'inventory': items }))
+        items = [item.to_dict() for item in player.inventory.values()]
+        self.controller.store_event(player.name, Event('inventory',
+                                                       {'inventory': items }))
 
     def send_player_location_inventory(self, player):
         if type(player) != Player:
             player = self.players[player]
-        items = [item.to_dict() for item in player.location.lobjects]
-        self.controller.store_event(player.name, Event('location_inventory', {'inventory': items }))
+        items = [item.to_dict() for item in player.location.lobjects.values()]
+        self.controller.store_event(player.name, Event('location_inventory',
+                                                       {'inventory': items }))
 
+    def initialize_script(self, thing):
+        ctx = LuaRuntime(unpack_returned_tuples=True)
+        self.script_contexts[thing.id] = ctx
+        ctx.execute(thing.script_body)
 
     def __init__(self, controller, datalocation):
         game_exists = os.path.exists(datalocation + '.db')
@@ -100,11 +112,24 @@ class World(object):
             for p in self.players:
                 print 'setting world for %s' % p
                 self.players[p].set_world(self)
-            self.lobjects = self.datastore['lobjects']
             self.areas = self.datastore['areas']
         else:
             self.players = {}
-            self.areas = []
+            self.areas = {}
             self.init_areas()
             self.init_lobjects()
             self.sync()
+        self.scripting = LuaRuntime(unpack_returned_tuples=True)
+        self.script_contexts = {}
+
+        # bootstrap all scripts
+        for area in self.areas.values():
+            if len(area.script_body) > 0:
+                self.initialize_script(area)
+            for lobject in area.lobjects.values():
+                if len(lobject.script_body) > 0:
+                    self.initialize_script(lobject)
+        for player in self.players.values():
+            for lobject in player.inventory.values():
+                if len(lobject.script_body) > 0:
+                    self.initialize_script(lobject)

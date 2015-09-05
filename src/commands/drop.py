@@ -11,10 +11,13 @@ class Drop(Command):
     def drop(self, player, *args):
         if len(args) == 0:
             raise CommandException(CommandException.NOT_ENOUGH_ARGUMENTS)
-        item_index = int(args[0]) - 1
-        if item_index < len(player.inventory):
-            item = player.inventory.pop(item_index)
-            player.location.lobjects.append(item)
+        item_id = args[0]
+        if item_id in player.inventory:
+            item = player.inventory[item_id]
+            player.location.lobjects[item.id] = item
+            del player.inventory[item_id]
             self.tell_player(player, "You dropped: %s" % item.name)
+            self.send_player_location_inventory(player)
+            self.send_player_inventory(player)
         else:
             raise CommandException(CommandException.NO_ITEM_IN_INVENTORY)

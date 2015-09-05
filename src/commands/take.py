@@ -11,10 +11,15 @@ class Take(Command):
     def take(self, player, *args):
         if len(args) == 0:
             raise CommandException(CommandException.NOT_ENOUGH_ARGUMENTS)
-        item_index = int(args[0]) - 1
-        if item_index < len(player.location.lobjects):
-            item = player.location.lobjects.pop(item_index)
-            player.inventory.append(item)
+        item_id = args[0]
+        if item_id in player.location.lobjects:
+            item = player.location.lobjects[item_id]
+            player.inventory[item.id] = item
             self.tell_player(player, "You took: %s" % item.name)
+            del(player.location.lobjects[item_id])
+            self.send_player_location_inventory(player)
+            self.send_player_inventory(player)
         else:
             raise CommandException(CommandException.NO_ITEM_HERE)
+
+# TODO: Use guids instead of integers

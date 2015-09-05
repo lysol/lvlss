@@ -1,21 +1,42 @@
 from __future__ import unicode_literals, division
 
 from time import sleep
-import sys, socket, json, select
+import sys
+import socket
+import json
+import select
 from curtsies import FullscreenWindow, Input, FSArray, fmtstr
 from curtsies.fmtfuncs import red, bold, green, on_blue, yellow, on_red, cyan
-from curtsies.formatstring import linesplit
 import curtsies.events
 
 log = open('/tmp/client.log', 'w')
 
+
 class Frame(curtsies.events.ScheduledEvent):
     pass
+
 
 def lreversed(rev):
     return list(rev)
 
+
+class LvlssParseError(Exception):
+    pass
+
+
 class LvlssClient(object):
+
+    def _preprocess_command(self, data):
+        if data['command'] in ('take', 'get'):
+            item_id = self.local_items[int(data['args'][0]) - 1]['id']
+            data['args'][0] = item_id
+        if data['command'] == 'go':
+            area_id = self.local_areas[int(data['args'][0]) - 1]['id']
+            data['args'][0] = area_id
+        if data['command'] in ('drop', 'script', 'getscript'):
+            item_id = self.inventory_items[int(data['args'][0]) - 1]['id']
+            data['args'][0] = item_id
+        return data
 
     def handle_event(self, event):
         method_name = 'handle_' + event['name']
@@ -30,19 +51,30 @@ class LvlssClient(object):
         self.append(event['area']['description'])
 
     def handle_location_areas(self, event):
+        del self.local_areas[:]
         self.append("Nearby places:")
         for i, area in enumerate(event['areas']):
             self.append("%d: %s" % (i + 1, area['name']))
+            self.local_areas.append(area)
 
     def handle_inventory(self, event):
+        del self.inventory_items[:]
         self.append("Inventory:")
         for i, item in enumerate(event['inventory']):
             self.append("%d: %s" % (i + 1, item['name']))
+            self.inventory_items.append(item)
 
     def handle_location_inventory(self, event):
+        del self.local_items[:]
         self.append("Items here:")
         for i, item in enumerate(event['inventory']):
             self.append("%d: %s" % (i + 1, item['name']))
+            self.local_items.append(item)
+
+    def handle_script_body(self, event):
+        self.append("Script for %s:" % event['thing']['name'])
+        for line in event['script_body']:
+            self.append(line)
 
     def append(self, text):
         self.scrollback.append(text)
@@ -97,7 +129,6 @@ class LvlssClient(object):
             parts.pop()
             self.server_buffer = ''
         for part in parts:
-            log.write("Part split: %s\n" % part)
             decoded = json.loads(part)
             if decoded['name'] == 'clientcrap':
                 for line in decoded['lines']:
@@ -106,6 +137,7 @@ class LvlssClient(object):
                 self.handle_event(decoded)
 
     def send_command(self, data):
+        data = self._preprocess_command(data)
         self.socket.send(json.dumps(data) + "\n")
 
     def __init__(self, nick, host='127.0.0.1', port=19820):
@@ -120,6 +152,10 @@ class LvlssClient(object):
         self.scrollback = []
         self.server_buffer = ''
 
+        self.local_items = []
+        self.inventory_items = []
+        self.local_areas = []
+
         self.send_command({'command': 'nick', 'args': [nick]})
 
     def build_view(self):
@@ -129,11 +165,17 @@ class LvlssClient(object):
         for i, line in enumerate(command_lines):
             fsa[height - len(command_lines) + i] = line
         scrollback_position_start = height - len(command_lines)
-        scrollback_lines = [fmtstr(line) for line in self.scrollback[-scrollback_position_start:]]
-        for i, line in enumerate(scrollback_lines[-scrollback_position_start:]):
-            log.write(repr(line) + "\n")
-            log.write("%d %d / %d %d / %d\n" % (width, height, scrollback_position_start, i, len(line)))
-            log.write("offset: %d\n" % (height - scrollback_position_start - i))
+        scrollback_lines = []
+        for line in self.scrollback:
+            if len(line) > width:
+                while len(line) > 0:
+                    scrollback_lines.append(line[:width])
+                    line = line[width:]
+            else:
+                scrollback_lines.append(line)
+        scrollback_lines = [fmtstr(l) for l in
+                            scrollback_lines[-scrollback_position_start:]]
+        for i, line in enumerate(scrollback_lines):
             fsa[i] = line
         self.window.render_to_terminal(fsa)
 
@@ -146,7 +188,9 @@ class LvlssClient(object):
         with self.window:
             with self.reactor:
                 while self.running:
-                    ready_to_read, _, _ = select.select([self.socket, self.reactor], [], [])
+                    self.build_view()
+                    ready_to_read, _, _ = select.select([self.socket,
+                                                        self.reactor], [], [])
 
                     for r in ready_to_read:
                         if r == self.socket:
@@ -159,13 +203,12 @@ class LvlssClient(object):
                                 exit()
                             elif e == u'<Ctrl-j>':
                                 self.handle_enter()
-                            elif e in (u'<DELETE>', u'<BACKSPACE>') and len(self.command_buffer) > 0:
+                            elif e in (u'<DELETE>', u'<BACKSPACE>'):
                                 self.command_buffer = self.command_buffer[:-1]
                             elif e == '<SPACE>':
                                 self.command_buffer += ' '
                             elif e is not None:
                                 self.command_buffer += e
-                    self.build_view()
                     sleep(0.01)
 
 if __name__ == "__main__":
