@@ -33,7 +33,7 @@ class LvlssClient(object):
         if data['command'] == 'go':
             area_id = self.local_areas[int(data['args'][0]) - 1]['id']
             data['args'][0] = area_id
-        if data['command'] in ('drop', 'script', 'getscript'):
+        if data['command'] in ('drop', 'script', 'getscript', 'setscript'):
             item_id = self.inventory_items[int(data['args'][0]) - 1]['id']
             data['args'][0] = item_id
         return data
