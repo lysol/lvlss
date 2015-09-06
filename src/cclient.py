@@ -6,7 +6,7 @@ import socket
 import json
 import select
 from curtsies import FullscreenWindow, Input, FSArray, fmtstr
-from curtsies.fmtfuncs import red, bold, green, on_blue, yellow, on_red, cyan
+from curtsies.fmtfuncs import red, bold, green, blue, on_blue, yellow, on_red, cyan, on_green
 import curtsies.events
 
 log = open('/tmp/client.log', 'w')
@@ -108,10 +108,13 @@ class LvlssClient(object):
         if len(self.command_buffer) == 0:
             return
         data = self.command_buffer
+        self.command_log.append(data)
+        self.command_log_cursor = len(self.command_log)
         tokens = self.parse_line(data.strip())
         command = {"command": tokens[0], "args": tokens[1:]}
         self.send_command(command)
         self.command_buffer = ''
+        self.command_buffer_cursor = 0
 
     def read_server_data(self):
         data = self.socket.recv(4096)
@@ -149,19 +152,32 @@ class LvlssClient(object):
         self.socket.setblocking(0)
         self.running = True
         self.command_buffer = ''
+        self.backup_command_buffer = ''
         self.scrollback = []
         self.server_buffer = ''
 
         self.local_items = []
         self.inventory_items = []
         self.local_areas = []
+        self.command_log = []
+        self.command_log_cursor = 0
+        self.command_buffer_cursor = 0
 
         self.send_command({'command': 'nick', 'args': [nick]})
+
+    def build_command_buffer(self, buffer):
+        prepend = '> '
+        inverse_pos = len(prepend) + self.command_buffer_cursor
+        full_buffer = prepend + self.command_buffer + ' '
+        before = green(full_buffer[:self.command_buffer_cursor + 2])
+        during = blue(on_green(full_buffer[self.command_buffer_cursor + 2]))
+        after = green(full_buffer[self.command_buffer_cursor + 3:])
+        return before + during + after
 
     def build_view(self):
         height, width = self.window.get_term_hw()
         fsa = FSArray(height, width)
-        command_lines = [green('> ' + self.command_buffer)]
+        command_lines = [self.build_command_buffer(self.command_buffer)]
         for i, line in enumerate(command_lines):
             fsa[height - len(command_lines) + i] = line
         scrollback_position_start = height - len(command_lines)
@@ -178,6 +194,13 @@ class LvlssClient(object):
         for i, line in enumerate(scrollback_lines):
             fsa[i] = line
         self.window.render_to_terminal(fsa)
+
+    def set_command_log_buffer(self):
+        if self.command_log_cursor < len(self.command_log):
+            self.command_buffer = self.command_log[self.command_log_cursor]
+        else:
+            self.command_buffer = self.backup_command_buffer
+        self.command_buffer_cursor = len(self.command_buffer)
 
     def start(self):
         self.reactor = Input()
@@ -204,11 +227,40 @@ class LvlssClient(object):
                             elif e == u'<Ctrl-j>':
                                 self.handle_enter()
                             elif e in (u'<DELETE>', u'<BACKSPACE>'):
-                                self.command_buffer = self.command_buffer[:-1]
-                            elif e == '<SPACE>':
-                                self.command_buffer += ' '
+                                if self.command_buffer_cursor > 0:
+                                    after = self.command_buffer[self.command_buffer_cursor:]
+                                    before = self.command_buffer[:self.command_buffer_cursor - 1]
+                                    self.command_buffer = before + after
+                                    self.command_buffer_cursor -= 1
+                                    if self.command_buffer_cursor < 0:
+                                        self.command_buffer_cursor = 0
+                            elif e == '<DOWN>':
+                                self.command_log_cursor += 1
+                                if self.command_log_cursor > len(self.command_log):
+                                    self.command_log_cursor = len(self.command_log)
+                                self.set_command_log_buffer()
+                            elif e == '<UP>':
+                                if self.command_log_cursor == len(self.command_log):
+                                    self.backup_command_buffer = self.command_buffer
+                                self.command_log_cursor -= 1
+                                if self.command_log_cursor < 0:
+                                    self.command_log_cursor = 0
+                                self.set_command_log_buffer()
+                            elif e == '<LEFT>':
+                                self.command_buffer_cursor -= 1
+                                if self.command_buffer_cursor < 0:
+                                    self.command_buffer_cursor = 0
+                            elif e == '<RIGHT>':
+                                self.command_buffer_cursor += 1
+                                if self.command_buffer_cursor > len(self.command_buffer):
+                                    self.command_buffer_cursor = len(self.command_buffer)
                             elif e is not None:
-                                self.command_buffer += e
+                                if e == '<SPACE>':
+                                    e = ' '
+                                after = self.command_buffer[self.command_buffer_cursor:]
+                                before = self.command_buffer[:self.command_buffer_cursor]
+                                self.command_buffer = before + e + after
+                                self.command_buffer_cursor += 1
                     sleep(0.01)
 
 if __name__ == "__main__":
