@@ -4,13 +4,14 @@ from area import Area
 from event import Event
 import shelve
 import os
-import lupa
-from lupa import LuaRuntime
+import saulscript
 
 
 class World(object):
 
     SYNC_CYCLES_CHECK = 2000
+    SCRIPTING_OP_LIMIT = 50000
+    SCRIPTING_TIME_LIMIT = 3
 
     def player_name_exists(self, name):
         return name in self.players and self.players[name].signed_in
@@ -97,9 +98,12 @@ class World(object):
                                                        {'inventory': items }))
 
     def initialize_script(self, thing):
-        ctx = LuaRuntime(unpack_returned_tuples=True)
+        ctx = saulscript.Context()
         self.script_contexts[thing.id] = ctx
-        ctx.execute(thing.script_body)
+        self.script_objects[thing.id] = ctx.execute(thing.script_body,
+                                                    op_limit=self.SCRIPTING_OP_LIMIT,
+                                                    time_limit=self.SCRIPTING_TIME_LIMIT)
+        print self.script_objects[thing.id]
 
     def __init__(self, controller, datalocation):
         game_exists = os.path.exists(datalocation + '.db')
@@ -119,8 +123,9 @@ class World(object):
             self.init_areas()
             self.init_lobjects()
             self.sync()
-        self.scripting = LuaRuntime(unpack_returned_tuples=True)
+        self.scripting = saulscript.Context()
         self.script_contexts = {}
+        self.script_objects = {}
 
         # bootstrap all scripts
         for area in self.areas.values():
