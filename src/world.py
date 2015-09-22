@@ -12,6 +12,8 @@ class World(object):
     SYNC_CYCLES_CHECK = 2000
     SCRIPTING_OP_LIMIT = 50000
     SCRIPTING_TIME_LIMIT = 3
+    SCRIPTING_OPERATION_POWER = 10
+    RECHARGE_RATE = 500
 
     def player_name_exists(self, name):
         return name in self.players and self.players[name].signed_in
@@ -44,11 +46,15 @@ class World(object):
         self.areas[quarry.id] = quarry
         self.areas[quarry_pond.id] = quarry_pond
 
-    def check_sync(self):
+    def tick(self):
         self.sync_counter += 1
+        self.recharge_counter += 1
         if self.sync_counter > self.SYNC_CYCLES_CHECK:
             self.sync_counter = 0
             self.sync()
+        if self.recharge_counter > self.RECHARGE_RATE:
+            self.recharge_counter = 0
+            self.charge_things()
 
     def sync(self):
         print 'Syncing...',
@@ -57,9 +63,27 @@ class World(object):
         self.datastore.sync()
         print 'Done.'
 
+    def charge_things(self):
+        print 'charging up stuff'
+        for l in self.areas:
+            self.areas[l].charge()
+            for i in self.areas[l].lobjects:
+                self.areas[l].lobjects[i].charge()
+        for p in self.players:
+            for i in self.players[p].inventory:
+                self.players[p].inventory[i].charge()
+
     def stop(self):
         self.sync()
         self.datastore.close()
+
+    def tell(self, target, msg):
+        if isinstance(target, Area):
+            self.tell_location(target, msg)
+        elif isinstance(target, Player):
+            self.tell_player(target, msg)
+        else:
+            print "Tried to tell a bad thing to an unknown thing: ", msg
 
     def tell_player(self, player, msg):
         if type(player) != Player:
@@ -68,6 +92,10 @@ class World(object):
             msg = [msg, ]
         self.controller.store_event(player.name, Event('clientcrap',
                                                        {'lines': msg}))
+
+    def tell_location(self, location, msg):
+        for player in location.players:
+            self.tell_player(player, msg)
 
     def send_player_location(self, player):
         if type(player) != Player:
@@ -97,18 +125,31 @@ class World(object):
         self.controller.store_event(player.name, Event('location_inventory',
                                                        {'inventory': items }))
 
-    def initialize_script(self, thing):
+    def initialize_script(self, thing, initiator):
         ctx = saulscript.Context()
+        ctx.set_op_limit(thing.power *
+            self.SCRIPTING_OPERATION_POWER)
         self.script_contexts[thing.id] = ctx
-        self.script_objects[thing.id] = ctx.execute(thing.script_body,
-                                                    op_limit=self.SCRIPTING_OP_LIMIT,
-                                                    time_limit=self.SCRIPTING_TIME_LIMIT)
+        try:
+            self.script_objects[thing.id] = \
+                    ctx.execute(thing.script_body,
+                                op_limit=self.SCRIPTING_OP_LIMIT,
+                                time_limit=self.SCRIPTING_TIME_LIMIT)
+        except saulscript.exceptions.OperationLimitReached:
+            msg = "%s doesn't have enough energy to perform this action." % thing.name
+            self.tell(initiator, msg)
+        except saulscript.exceptions.TimeLimitReached:
+            msg = "%s took too long to perform this action." % thing.name
+            self.tell(initiator, msg)
+        thing.power -= ctx.operations_counted / \
+            self.SCRIPTING_OPERATION_POWER
         print self.script_objects[thing.id]
 
     def __init__(self, controller, datalocation):
         game_exists = os.path.exists(datalocation + '.db')
         self.datastore = shelve.open(datalocation, writeback=True)
         self.sync_counter = 0
+        self.recharge_counter = 0
         self.controller = controller
         if game_exists:
             print 'Loading existing game.'
@@ -130,11 +171,11 @@ class World(object):
         # bootstrap all scripts
         for area in self.areas.values():
             if len(area.script_body) > 0:
-                self.initialize_script(area)
+                self.initialize_script(area, area)
             for lobject in area.lobjects.values():
                 if len(lobject.script_body) > 0:
-                    self.initialize_script(lobject)
+                    self.initialize_script(lobject, area)
         for player in self.players.values():
             for lobject in player.inventory.values():
                 if len(lobject.script_body) > 0:
-                    self.initialize_script(lobject)
+                    self.initialize_script(lobject, player)

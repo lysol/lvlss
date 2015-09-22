@@ -111,7 +111,7 @@ class LvlssServer:
                     if event is not None:
                         self.handle_event(client, event)
 
-                self.controller.check_sync()
+                self.controller.tick()
                 sleep(self.how_nice)
         except KeyboardInterrupt:
             self.controller.world.stop()

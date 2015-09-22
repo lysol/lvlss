@@ -40,8 +40,8 @@ class Controller(object):
         self.commands = [com(self.world) for
                          com in commands.all_commands]
 
-    def check_sync(self):
-        self.world.check_sync()
+    def tick(self):
+        self.world.tick()
 
     def remove_player(self, name):
         self.world.remove_player(name)
