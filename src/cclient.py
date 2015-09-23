@@ -6,6 +6,7 @@ import socket
 import json
 import select
 from curtsies import FullscreenWindow, Input, FSArray, fmtstr
+from curtsies.events import PasteEvent
 from curtsies.fmtfuncs import red, bold, green, blue, on_blue, yellow, on_red, cyan, on_green
 import curtsies.events
 
@@ -27,15 +28,30 @@ class LvlssParseError(Exception):
 class LvlssClient(object):
 
     def _preprocess_command(self, data):
-        if data['command'] in ('take', 'get'):
-            item_id = self.local_items[int(data['args'][0]) - 1]['id']
-            data['args'][0] = item_id
-        if data['command'] == 'go':
-            area_id = self.local_areas[int(data['args'][0]) - 1]['id']
-            data['args'][0] = area_id
-        if data['command'] in ('drop', 'script', 'getscript', 'setscript'):
-            item_id = self.inventory_items[int(data['args'][0]) - 1]['id']
-            data['args'][0] = item_id
+        try:
+            if data['command'] in ('take', 'get'):
+                target_index = int(data['args'][0]) - 1
+                try:
+                    item_id = self.local_items[target_index]['id']
+                    data['args'][0] = item_id
+                except IndexError:
+                    return data
+            if data['command'] == 'go':
+                target_index = int(data['args'][0]) - 1
+                try:
+                    area_id = self.local_areas[target_index]['id']
+                    data['args'][0] = area_id
+                except IndexError:
+                    return data
+            if data['command'] in ('drop', 'script', 'getscript', 'setscript'):
+                target_index = int(data['args'][0]) - 1
+                try:
+                    item_id = self.inventory_items[target_index]['id']
+                    data['args'][0] = item_id
+                except IndexError:
+                    return data
+        except ValueError:
+            pass
         return data
 
     def handle_event(self, event):
@@ -202,6 +218,49 @@ class LvlssClient(object):
             self.command_buffer = self.backup_command_buffer
         self.command_buffer_cursor = len(self.command_buffer)
 
+    def handle_keypress(self, e):
+        if e == u'<ESC>':
+            self.running = False
+            self.socket.close()
+            exit()
+        elif e == u'<Ctrl-j>':
+            self.handle_enter()
+        elif e in (u'<DELETE>', u'<BACKSPACE>'):
+            if self.command_buffer_cursor > 0:
+                after = self.command_buffer[self.command_buffer_cursor:]
+                before = self.command_buffer[:self.command_buffer_cursor - 1]
+                self.command_buffer = before + after
+                self.command_buffer_cursor -= 1
+                if self.command_buffer_cursor < 0:
+                    self.command_buffer_cursor = 0
+        elif e == '<DOWN>':
+            self.command_log_cursor += 1
+            if self.command_log_cursor > len(self.command_log):
+                self.command_log_cursor = len(self.command_log)
+            self.set_command_log_buffer()
+        elif e == '<UP>':
+            if self.command_log_cursor == len(self.command_log):
+                self.backup_command_buffer = self.command_buffer
+            self.command_log_cursor -= 1
+            if self.command_log_cursor < 0:
+                self.command_log_cursor = 0
+            self.set_command_log_buffer()
+        elif e == '<LEFT>':
+            self.command_buffer_cursor -= 1
+            if self.command_buffer_cursor < 0:
+                self.command_buffer_cursor = 0
+        elif e == '<RIGHT>':
+            self.command_buffer_cursor += 1
+            if self.command_buffer_cursor > len(self.command_buffer):
+                self.command_buffer_cursor = len(self.command_buffer)
+        elif e is not None:
+            if e == '<SPACE>':
+                e = ' '
+            after = self.command_buffer[self.command_buffer_cursor:]
+            before = self.command_buffer[:self.command_buffer_cursor]
+            self.command_buffer = before + e + after
+            self.command_buffer_cursor += 1
+
     def start(self):
         self.reactor = Input()
         self.window = FullscreenWindow()
@@ -220,47 +279,11 @@ class LvlssClient(object):
                             self.read_server_data()
                         else:
                             e = self.reactor.send(0)
-                            if e == u'<ESC>':
-                                self.running = False
-                                self.socket.close()
-                                exit()
-                            elif e == u'<Ctrl-j>':
-                                self.handle_enter()
-                            elif e in (u'<DELETE>', u'<BACKSPACE>'):
-                                if self.command_buffer_cursor > 0:
-                                    after = self.command_buffer[self.command_buffer_cursor:]
-                                    before = self.command_buffer[:self.command_buffer_cursor - 1]
-                                    self.command_buffer = before + after
-                                    self.command_buffer_cursor -= 1
-                                    if self.command_buffer_cursor < 0:
-                                        self.command_buffer_cursor = 0
-                            elif e == '<DOWN>':
-                                self.command_log_cursor += 1
-                                if self.command_log_cursor > len(self.command_log):
-                                    self.command_log_cursor = len(self.command_log)
-                                self.set_command_log_buffer()
-                            elif e == '<UP>':
-                                if self.command_log_cursor == len(self.command_log):
-                                    self.backup_command_buffer = self.command_buffer
-                                self.command_log_cursor -= 1
-                                if self.command_log_cursor < 0:
-                                    self.command_log_cursor = 0
-                                self.set_command_log_buffer()
-                            elif e == '<LEFT>':
-                                self.command_buffer_cursor -= 1
-                                if self.command_buffer_cursor < 0:
-                                    self.command_buffer_cursor = 0
-                            elif e == '<RIGHT>':
-                                self.command_buffer_cursor += 1
-                                if self.command_buffer_cursor > len(self.command_buffer):
-                                    self.command_buffer_cursor = len(self.command_buffer)
-                            elif e is not None:
-                                if e == '<SPACE>':
-                                    e = ' '
-                                after = self.command_buffer[self.command_buffer_cursor:]
-                                before = self.command_buffer[:self.command_buffer_cursor]
-                                self.command_buffer = before + e + after
-                                self.command_buffer_cursor += 1
+                            if isinstance(e, PasteEvent):
+                                for key in e.events:
+                                    self.handle_keypress(key)
+                            else:
+                                self.handle_keypress(e)
                     sleep(0.01)
 
 if __name__ == "__main__":

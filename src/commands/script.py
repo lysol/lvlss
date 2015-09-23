@@ -1,6 +1,6 @@
 from command import Command, is_command, CommandException
 from event import Event
-import lupa
+import saulscript
 import os
 
 class SetScript(Command):
@@ -39,7 +39,7 @@ class SetScript(Command):
             thing = player.location
         thing.set_script(script_body)
         try:
-            self.world.initialize_script(thing)
+            self.world.initialize_script(thing, player)
         except saulscript.exceptions.SaulException as saulerror:
             self.tell_player(player, saulerror.message)
 

@@ -24,6 +24,9 @@ class Controller(object):
         else:
             player = None
 
+        if 'command' not in data:
+            raise CommandException(CommandException.UNKNOWN_COMMAND)
+
         for command in self.commands:
             if command.invoked_by(data['command']):
                 if 'args' not in data:
