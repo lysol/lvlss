@@ -125,8 +125,25 @@ class World(object):
         self.controller.store_event(player.name, Event('location_inventory',
                                                        {'inventory': items }))
 
+    def initialize_context(self, context):
+        def _on(name, callback):
+            self.register_event_handler(name, callback)
+        context['on'] = _on
+        return context
+
+    def register_event_handler(self, name, callback):
+        if name not in self.event_handlers:
+            self.event_handlers[name] = {}
+        self.event_handlers[name][obj.id] = callback
+
+    def trigger_event(self, name, data):
+        if name in self.event_handlers:
+            for obj_id, callback in self.event_handlers[name].iteritems():
+                callback(data)
+
     def initialize_script(self, thing, initiator):
         ctx = saulscript.Context()
+        self.initialize_context(ctx)
         ctx.set_op_limit(thing.power *
             self.SCRIPTING_OPERATION_POWER)
         self.script_contexts[thing.id] = ctx
@@ -167,6 +184,7 @@ class World(object):
         self.scripting = saulscript.Context()
         self.script_contexts = {}
         self.script_objects = {}
+        self.event_handlers = {}
 
         # bootstrap all scripts
         for area in self.areas.values():
