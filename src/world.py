@@ -137,15 +137,15 @@ class World(object):
         print "Registering event handler for %s" % name
         if name not in self.event_handlers:
             print "Creating new list"
-            self.event_handlers[name] = {} 
-        self.event_handlers[name][obj.id] = callback
+            self.event_handlers[name] = []
+        self.event_handlers[name].append(callback)
 
     def trigger_event(self, name, data):
         print "Triggering events %s" % name
         print self.event_handlers
         if name in self.event_handlers:
             print "name in event handlers"
-            for obj_id, callback in self.event_handlers[name].iteritems():
+            for callback in self.event_handlers[name]:
                 print "callin"
                 callback(data)
 
