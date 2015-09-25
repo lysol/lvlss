@@ -4,8 +4,8 @@ from area import Area
 from event import Event
 import shelve
 import os
+import logging
 import saulscript
-
 
 class World(object):
 
@@ -29,7 +29,7 @@ class World(object):
             return
         if type(player) == str or type(player) == unicode:
             player = self.players[player]
-        print "Removing player: ", player.name
+        logging.debug("Removing player: " + player.name)
         player.signed_in = False
 
     def init_lobjects(self):
@@ -55,6 +55,7 @@ class World(object):
         if self.recharge_counter > self.RECHARGE_RATE:
             self.recharge_counter = 0
             self.charge_things()
+            self.trigger_event('charge', {'charge': True})
 
     def sync(self):
         print 'Syncing...',
@@ -127,18 +128,25 @@ class World(object):
 
     def initialize_context(self, context):
         def _on(name, callback):
+            print "on happening %s %s" % (name, callback)
             self.register_event_handler(name, callback)
         context['on'] = _on
         return context
 
     def register_event_handler(self, name, callback):
+        print "Registering event handler for %s" % name
         if name not in self.event_handlers:
-            self.event_handlers[name] = {}
+            print "Creating new list"
+            self.event_handlers[name] = {} 
         self.event_handlers[name][obj.id] = callback
 
     def trigger_event(self, name, data):
+        print "Triggering events %s" % name
+        print self.event_handlers
         if name in self.event_handlers:
+            print "name in event handlers"
             for obj_id, callback in self.event_handlers[name].iteritems():
+                print "callin"
                 callback(data)
 
     def initialize_script(self, thing, initiator):
@@ -160,6 +168,8 @@ class World(object):
             self.tell(initiator, msg)
         thing.power -= ctx.operations_counted / \
             self.SCRIPTING_OPERATION_POWER
+        print "Context: "
+        print ctx
         print self.script_objects[thing.id]
 
     def __init__(self, controller, datalocation):
