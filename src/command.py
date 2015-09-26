@@ -11,6 +11,7 @@ class CommandException(Exception):
     NO_ITEM_IN_INVENTORY = 5
     NEED_A_NUMBER = 6
     BAD_SCRIPT_PATH = 7
+    UNKNOWN_ITEM = 8
 
     messages = {
         0: "Unknown command.",
@@ -20,7 +21,8 @@ class CommandException(Exception):
         4: "That item is not here.",
         5: "That item is not in your inventory.",
         6: "The argument at position %d must be a number.",
-        7: "No such file."
+        7: "No such file.",
+        8: "Unknown item."
     }
 
     def __init__(self, value, interp=None):

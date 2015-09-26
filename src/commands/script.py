@@ -38,7 +38,7 @@ class SetScript(Command):
         elif thing_id == player.location.id:
             thing = player.location
         else:
-            raise CommandException("Unknown item")
+            raise CommandException(CommandException.UNKNOWN_ITEM)
         thing.set_script(script_body)
         try:
             self.world.initialize_script(thing, player)

@@ -6,7 +6,9 @@ from controller import Controller
 from command import CommandException
 from time import sleep
 from event import Event
+import logging
 
+logging.basicConfig(level=logging.DEBUG)
 
 class LvlssServer:
 

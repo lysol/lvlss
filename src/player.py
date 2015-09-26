@@ -23,3 +23,6 @@ class Player(object):
         self.inventory = {}
         self.world = world
         self.signed_in = False
+
+    def to_dict(self):
+        return self.__getstate__()

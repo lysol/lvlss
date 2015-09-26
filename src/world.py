@@ -82,7 +82,8 @@ class World(object):
         if isinstance(target, Area):
             self.tell_location(target, msg)
         elif isinstance(target, Player):
-            self.tell_player(target, msg)
+            if target.signed_in:
+                self.tell_player(target, msg)
         else:
             print "Tried to tell a bad thing to an unknown thing: ", msg
 
@@ -126,32 +127,36 @@ class World(object):
         self.controller.store_event(player.name, Event('location_inventory',
                                                        {'inventory': items }))
 
-    def initialize_context(self, context):
+    def initialize_context(self, thing, initiator, context):
+        context['initiator'] = initiator.to_dict()
+        context['object'] = thing.to_dict()
         def _on(name, callback):
             print "on happening %s %s" % (name, callback)
-            self.register_event_handler(name, callback)
-        context['on'] = _on
+            self.register_event_handler(thing.id, name, callback)
+        context['on'] = context.wrap_function(_on)
+        def _print(arg):
+            self.tell(initiator, arg)
+        context['print'] = context.wrap_function(_print)
         return context
 
-    def register_event_handler(self, name, callback):
+    def register_event_handler(self, obj_id, name, callback):
         print "Registering event handler for %s" % name
         if name not in self.event_handlers:
             print "Creating new list"
-            self.event_handlers[name] = []
-        self.event_handlers[name].append(callback)
+            self.event_handlers[name] = {}
+        self.event_handlers[name][obj_id] = callback
 
     def trigger_event(self, name, data):
         print "Triggering events %s" % name
         print self.event_handlers
         if name in self.event_handlers:
-            print "name in event handlers"
-            for callback in self.event_handlers[name]:
-                print "callin"
-                callback(data)
+            for obj_id in self.event_handlers[name]:
+                print "Thing, ", self.event_handlers[name][obj_id]
+                self.event_handlers[name][obj_id](data)
 
     def initialize_script(self, thing, initiator):
         ctx = saulscript.Context()
-        self.initialize_context(ctx)
+        self.initialize_context(thing, initiator, ctx)
         ctx.set_op_limit(thing.power *
             self.SCRIPTING_OPERATION_POWER)
         self.script_contexts[thing.id] = ctx
