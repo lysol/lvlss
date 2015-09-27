@@ -6,6 +6,7 @@ import shelve
 import os
 import logging
 import saulscript
+import saulscript.syntax_tree
 
 class World(object):
 
@@ -131,15 +132,17 @@ class World(object):
         context['initiator'] = initiator.to_dict()
         context['object'] = thing.to_dict()
         def _on(name, callback):
-            print "on happening %s %s" % (name, callback)
+            logging.debug("on happening %s %s" % (name, callback))
             self.register_event_handler(thing.id, name, callback)
-        context['on'] = context.wrap_function(_on)
+        context['on'] = _on
         def _print(arg):
-            self.tell(initiator, arg)
-        context['print'] = context.wrap_function(_print)
+            self.tell(initiator, str(arg))
+        context['print'] = _print
         return context
 
     def register_event_handler(self, obj_id, name, callback):
+        if isinstance(name, saulscript.syntax_tree.nodes.Node):
+            name = name.value
         print "Registering event handler for %s" % name
         if name not in self.event_handlers:
             print "Creating new list"
@@ -153,7 +156,11 @@ class World(object):
             for obj_id in self.event_handlers[name]:
                 print "Thing, ", self.event_handlers[name][obj_id]
                 try:
-                    self.event_handlers[name][obj_id](data)
+                    func = self.event_handlers[name][obj_id]
+                    if isinstance(func, saulscript.syntax_tree.nodes.FunctionNode):
+                        func = func.reduce()
+                    logging.debug("Event handler: %s(%s)", func, data)
+                    func(data)
                 except saulscript.exceptions.SaulException as e:
                     print repr(e)
 
