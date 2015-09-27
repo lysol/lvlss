@@ -79,6 +79,24 @@ class World(object):
         self.sync()
         self.datastore.close()
 
+    def find_object(self, obj_id):
+        for l in self.areas:
+            if obj_id in self.areas[l].lobjects:
+                return self.areas[l].lobjects[obj_id]
+        for p in self.players:
+            if obj_id in self.players[p].inventory:
+                return self.players[p].inventory[obj_id]
+
+    def tell_owner(self, source, msg):
+        if hasattr(source, 'id'):
+            source = source.id
+        for l in self.areas:
+            if source in self.areas[l].lobjects:
+                self.tell(self.areas[l], msg)
+        for p in self.players:
+            if source in self.players[p].inventory:
+                self.tell(self.players[p], msg)
+
     def tell(self, target, msg):
         if isinstance(target, Area):
             self.tell_location(target, msg)
@@ -135,9 +153,9 @@ class World(object):
             logging.debug("on happening %s %s" % (name, callback))
             self.register_event_handler(thing.id, name, callback)
         context['on'] = _on
-        def _print(arg):
+        def tell(arg):
             self.tell(initiator, str(arg))
-        context['print'] = _print
+        context['tell'] = tell
         return context
 
     def register_event_handler(self, obj_id, name, callback):
@@ -154,15 +172,13 @@ class World(object):
         print self.event_handlers
         if name in self.event_handlers:
             for obj_id in self.event_handlers[name]:
-                print "Thing, ", self.event_handlers[name][obj_id]
                 try:
                     func = self.event_handlers[name][obj_id]
-                    if isinstance(func, saulscript.syntax_tree.nodes.FunctionNode):
-                        func = func.reduce()
                     logging.debug("Event handler: %s(%s)", func, data)
                     func(data)
                 except saulscript.exceptions.SaulException as e:
-                    print repr(e)
+                    obj = self.find_object(obj_id)
+                    self.tell_owner(obj_id, "Scripting error on object %s at line %d: %s" % (obj.name, e.line_num, repr(e)))
 
     def initialize_script(self, thing, initiator):
         ctx = saulscript.Context()
