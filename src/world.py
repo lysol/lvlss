@@ -152,7 +152,10 @@ class World(object):
         if name in self.event_handlers:
             for obj_id in self.event_handlers[name]:
                 print "Thing, ", self.event_handlers[name][obj_id]
-                self.event_handlers[name][obj_id](data)
+                try:
+                    self.event_handlers[name][obj_id](data)
+                except saulscript.exceptions.SaulException as e:
+                    print repr(e)
 
     def initialize_script(self, thing, initiator):
         ctx = saulscript.Context()

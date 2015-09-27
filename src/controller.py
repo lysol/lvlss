@@ -49,7 +49,10 @@ class Controller(object):
     def remove_player(self, name):
         self.world.remove_player(name)
 
-    def __init__(self, server, datalocation="/tmp/lvlssworld"):
+    def __init__(self, server, datalocation=None):
+        if datalocation is None:
+            from os.path import join, expanduser
+            datalocation = join(expanduser('~'), '.lvlss')
         self.world = World(self, datalocation)
         self.commands = []
         self.initialize_commands()
