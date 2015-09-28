@@ -56,7 +56,7 @@ class World(object):
         if self.recharge_counter > self.RECHARGE_RATE:
             self.recharge_counter = 0
             self.charge_things()
-            self.trigger_event('charge', {'charge': True})
+            self.emit_event('charge', {'charge': True})
 
     def sync(self):
         print 'Syncing...',
@@ -167,15 +167,27 @@ class World(object):
             self.event_handlers[name] = {}
         self.event_handlers[name][obj_id] = callback
 
-    def trigger_event(self, name, data):
-        print "Triggering events %s" % name
-        print self.event_handlers
+    def in_scope(self, scope, obj):
+        if type(scope) != list:
+            scope = [scope]
+        def _in_scope(res, _scope):
+            if obj.id == _scope.id:
+                return res and True
+            if isinstance(_scope, Area):
+                return res and obj.id in map(lambda l: l.id, _scope.lobjects)
+            elif isinstance(_scope, Player):
+                return res and obj.id in map(lambda l: l.id, _scope.inventory)
+        return reduce(_in_scope, scope) 
+
+    def emit_event(self, name, data, scope=None):
         if name in self.event_handlers:
             for obj_id in self.event_handlers[name]:
+                obj = self.find_object(obj_id)
                 try:
-                    func = self.event_handlers[name][obj_id]
-                    logging.debug("Event handler: %s(%s)", func, data)
-                    func(data)
+                    if scope is None or self.in_scope(scope, obj_id):
+                        func = self.event_handlers[name][obj_id]
+                        logging.debug("Event handler: %s(%s)", func, data)
+                        func(data)
                 except saulscript.exceptions.SaulException as e:
                     obj = self.find_object(obj_id)
                     self.tell_owner(obj_id, "Scripting error on object %s at line %d: %s" % (obj.name, e.line_num, repr(e)))

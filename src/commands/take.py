@@ -19,6 +19,11 @@ class Take(Command):
             del(player.location.lobjects[item_id])
             self.send_player_location_inventory(player)
             self.send_player_inventory(player)
+            self.world.emit_event('take', {
+                'item': item.to_dict(), 
+                'player': player.to_dict(),
+                'area': player.location.to_dict()
+                }, scope=[player.location, player])            
         else:
             raise CommandException(CommandException.NO_ITEM_HERE)
 

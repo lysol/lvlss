@@ -16,6 +16,11 @@ class Drop(Command):
             item = player.inventory[item_id]
             player.location.lobjects[item.id] = item
             del player.inventory[item_id]
+            self.world.emit_event('drop', {
+                'item': item.to_dict(), 
+                'player': player.to_dict(),
+                'area': player.location.to_dict()
+                }, scope=[player.location, player])
             self.tell_player(player, "You dropped: %s" % item.name)
             self.send_player_location_inventory(player)
             self.send_player_inventory(player)
