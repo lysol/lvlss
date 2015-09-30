@@ -24,6 +24,7 @@ class World(object):
         if name not in self.players:
             self.players[name] = Player(self, name)
         self.players[name].set_location(self.areas[self.areas.keys()[0]])
+        self.players[name].location.players.append(self.players[name])
         self.players[name].signed_in = True
 
     def remove_player(self, player):
@@ -33,6 +34,7 @@ class World(object):
             player = self.players[player]
         logging.info("Removing player: %s", player.name)
         player.signed_in = False
+        player.location.players.remove(player)
 
     def init_lobjects(self):
         # this will be an initialization routine for the first objects
@@ -87,6 +89,7 @@ class World(object):
         for p in self.players:
             if obj_id in self.players[p].inventory:
                 return self.players[p].inventory[obj_id]
+        return None
 
     def tell_owner(self, source, msg):
         logging.debug("tell_owner: Checking source %s", source)
@@ -96,6 +99,7 @@ class World(object):
         for l in self.areas:
             logging.debug("tell_owner: checking area %s", l)
             if source in self.areas[l].lobjects:
+                logging.debug("tell_owner: area checks out")
                 self.tell(self.areas[l], msg)
         for p in self.players:
             logging.debug("tell_owner: checking player %s", p)
@@ -106,6 +110,7 @@ class World(object):
 
     def tell(self, target, msg):
         if isinstance(target, Area):
+            logging.debug("tell: target is an Area")
             self.tell_location(target, msg)
         elif isinstance(target, Player):
             if target.signed_in:
@@ -116,6 +121,7 @@ class World(object):
 
     def tell_player(self, player, msg):
         if type(player) != Player:
+            logging.debug("Ok, player is an index")
             player = self.players[player]
         if type(msg) != list:
             msg = [msg, ]
@@ -123,7 +129,10 @@ class World(object):
                                                        {'lines': msg}))
 
     def tell_location(self, location, msg):
+        logging.debug("tell_location: Ok, telling %s '%s'", location, msg)
+        logging.debug("tell_location: players in location: %s", repr(location.players))
         for player in location.players:
+            logging.debug("tell_location: telling %s", player)
             self.tell_player(player, msg)
 
     def send_player_location(self, player):

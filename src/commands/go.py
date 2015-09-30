@@ -26,7 +26,10 @@ class Go(Command):
             raise CommandException(CommandException.NOT_ENOUGH_ARGUMENTS)
         area_id = args[0]
         if area_id in player.location.links_to:
+            player.location.players.remove(player)
             player.location = player.location.links_to[area_id]
+            player.location.players.append(player)
+
             # hacky thing....maybe needs a better interface
             look = Look(self.world)
             return look.look(player)
