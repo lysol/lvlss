@@ -1,6 +1,7 @@
 from __future__ import unicode_literals, division
 
 from time import sleep
+import os
 import sys
 import socket
 import json
@@ -50,6 +51,17 @@ class LvlssClient(object):
                     data['args'][0] = item_id
                 except IndexError:
                     return data
+            if data['command'] == 'setscript':
+                data['command'] = 'script'
+                if len(data['args']) > 1:
+                    try:
+                        script_path = os.path.realpath(
+                            os.path.expanduser(data['args'][1])
+                        )
+                        script_body = open(script_path, 'r').read()
+                        data['args'][1] = script_body
+                    except IOError:
+                        self.append("Couldn't read file: %s" % script_path)
         except ValueError:
             pass
         return data
@@ -89,8 +101,8 @@ class LvlssClient(object):
 
     def handle_script_body(self, event):
         self.append("Script for %s:" % event['thing']['name'])
-        for line in event['script_body']:
-            self.append(line)
+        for line in event['script_body'].split("\n"):
+            self.append(event['script_body'])
 
     def append(self, text):
         self.scrollback.append(text)

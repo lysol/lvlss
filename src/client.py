@@ -3,9 +3,12 @@ import select
 import json
 from time import sleep
 import sys
+import logging
+
 
 class LvlssParseError(Exception):
     pass
+
 
 class LvlssClient:
 
@@ -18,7 +21,6 @@ class LvlssClient:
         self.running = False
 
     def parse_line(self, line):
-        pos = 0
         escaped = False
         in_quotes = False
         tokens = ['']
@@ -31,7 +33,8 @@ class LvlssClient:
             # If we hit a quote and it's not escaped \"
             elif x == '"' and not escaped:
                 in_quotes = not in_quotes
-            # if we're not quoted, not escaped, and we hit a space, peel off a new blank token
+            # if we're not quoted, not escaped, and we hit a space,
+            # peel off a new blank token
             elif not in_quotes and not escaped and x == ' ':
                 tokens.append('')
             # otherwise, append the character to the current token
@@ -51,7 +54,8 @@ class LvlssClient:
         socket_list = [sys.stdin, self.socket]
 
         # Get the list sockets which are readable
-        read_sockets, write_sockets, error_sockets = select.select(socket_list , [], [])
+        read_sockets, write_sockets, error_sockets = select.select(
+            socket_list, [], [])
 
         while self.running:
 
@@ -62,13 +66,13 @@ class LvlssClient:
                 if read_socket == self.socket:
                     data = self.socket.recv(4096)
                     if not data:
-                        print 'Shutting down.'
+                        logging.info('Shutting down.')
                         self.running = False
                         break
                     decoded = json.loads(data)
                     if decoded['event_name'] == 'clientcrap':
                         for line in decoded['lines']:
-                            print line
+                            logging.debug(line)
                     else:
                         sys.stdout.write(data + '\n')
                         sys.stdout.flush()
@@ -79,7 +83,7 @@ class LvlssClient:
                     command = json.dumps(command) + "\n"
 
                     if data:
-                        res = self.socket.send(command)
+                        self.socket.send(command)
 
             sleep(self.how_nice)
 

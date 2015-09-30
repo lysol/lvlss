@@ -8,6 +8,7 @@ import logging
 import saulscript
 import saulscript.syntax_tree
 
+
 class World(object):
 
     SYNC_CYCLES_CHECK = 2000
@@ -30,7 +31,7 @@ class World(object):
             return
         if type(player) == str or type(player) == unicode:
             player = self.players[player]
-        logging.debug("Removing player: " + player.name)
+        logging.info("Removing player: %s", player.name)
         player.signed_in = False
 
     def init_lobjects(self):
@@ -59,14 +60,14 @@ class World(object):
             self.emit_event('charge', {'charge': True})
 
     def sync(self):
-        print 'Syncing...',
+        logging.info('Syncing...')
         self.datastore['players'] = dict(self.players)
         self.datastore['areas'] = dict(self.areas)
         self.datastore.sync()
-        print 'Done.'
+        logging.info('Done.')
 
     def charge_things(self):
-        print 'charging up stuff'
+        logging.debug('charging up stuff')
         for l in self.areas:
             self.areas[l].charge()
             for i in self.areas[l].lobjects:
@@ -104,7 +105,8 @@ class World(object):
             if target.signed_in:
                 self.tell_player(target, msg)
         else:
-            print "Tried to tell a bad thing to an unknown thing: ", msg
+            logging.error("Tried to tell a bad thing to an unknown thing: ",
+                          msg)
 
     def tell_player(self, player, msg):
         if type(player) != Player:
@@ -121,99 +123,118 @@ class World(object):
     def send_player_location(self, player):
         if type(player) != Player:
             player = self.players[player]
-        self.controller.store_event(player.name, Event('location',
-                                                       {'area': player.location.to_dict() }))
+        self.controller.store_event(player.name,
+                                    Event('location', {
+                                        'area': player.location.to_dict()
+                                    }))
 
     def send_player_location_areas(self, player):
         if type(player) != Player:
             player = self.players[player]
         areas = [area.to_dict() for area in player.location.links_to.values()]
         self.controller.store_event(player.name,
-                                    Event('location_areas',
-                                    {'areas': areas }))
+                                    Event('location_areas', {
+                                        'areas': areas
+                                    }))
 
     def send_player_inventory(self, player):
         if type(player) != Player:
             player = self.players[player]
         items = [item.to_dict() for item in player.inventory.values()]
         self.controller.store_event(player.name, Event('inventory',
-                                                       {'inventory': items }))
+                                                       {'inventory': items}))
 
     def send_player_location_inventory(self, player):
         if type(player) != Player:
             player = self.players[player]
         items = [item.to_dict() for item in player.location.lobjects.values()]
         self.controller.store_event(player.name, Event('location_inventory',
-                                                       {'inventory': items }))
+                                                       {'inventory': items}))
 
     def initialize_context(self, thing, initiator, context):
         context['initiator'] = initiator.to_dict()
         context['object'] = thing.to_dict()
+
         def _on(name, callback):
             logging.debug("on happening %s %s" % (name, callback))
             self.register_event_handler(thing.id, name, callback)
         context['on'] = _on
+
         def tell(arg):
             self.tell(initiator, str(arg))
         context['tell'] = tell
+
         return context
 
     def register_event_handler(self, obj_id, name, callback):
         if isinstance(name, saulscript.syntax_tree.nodes.Node):
             name = name.value
-        print "Registering event handler for %s" % name
+        logging.debug("Registering event handler for %s" % name)
         if name not in self.event_handlers:
-            print "Creating new list"
+            logging.debug("Creating new list")
             self.event_handlers[name] = {}
         self.event_handlers[name][obj_id] = callback
 
     def in_scope(self, scope, obj):
         if type(scope) != list:
             scope = [scope]
+        logging.debug("Checking if obj %s is in Scope %s", obj.id, repr(scope))
+
         def _in_scope(res, _scope):
             if obj.id == _scope.id:
-                return res and True
+                logging.debug("Object %s is equal to Scope", obj.id)
+                return True
             if isinstance(_scope, Area):
-                return res and obj.id in map(lambda l: l.id, _scope.lobjects)
+                result = res or obj.id in _scope.lobjects
+                logging.debug("Obj %s is in Area %s's items",
+                              obj.id, _scope.id)
+                return result
             elif isinstance(_scope, Player):
-                return res and obj.id in map(lambda l: l.id, _scope.inventory)
-        return reduce(_in_scope, scope) 
+                result = res or obj.id in _scope.inventory
+                logging.debug("Obj %s is in Player %s's inventory",
+                              obj.id, _scope.id)
+                return result
+
+        return reduce(_in_scope, scope)
 
     def emit_event(self, name, data, scope=None):
         if name in self.event_handlers:
             for obj_id in self.event_handlers[name]:
                 obj = self.find_object(obj_id)
                 try:
-                    if scope is None or self.in_scope(scope, obj_id):
+                    if scope is None or self.in_scope(scope, obj):
                         func = self.event_handlers[name][obj_id]
                         logging.debug("Event handler: %s(%s)", func, data)
                         func(data)
                 except saulscript.exceptions.SaulException as e:
                     obj = self.find_object(obj_id)
-                    self.tell_owner(obj_id, "Scripting error on object %s at line %d: %s" % (obj.name, e.line_num, repr(e)))
+                    printed_exception = "Scripting error on object %s at line %d: %s" % \
+                        (obj.name, e.line_num, repr(e))
+                    self.tell_owner(obj_id, printed_exception)
 
     def initialize_script(self, thing, initiator):
         ctx = saulscript.Context()
         self.initialize_context(thing, initiator, ctx)
         ctx.set_op_limit(thing.power *
-            self.SCRIPTING_OPERATION_POWER)
+                         self.SCRIPTING_OPERATION_POWER)
         self.script_contexts[thing.id] = ctx
         try:
             self.script_objects[thing.id] = \
-                    ctx.execute(thing.script_body,
-                                op_limit=self.SCRIPTING_OP_LIMIT,
-                                time_limit=self.SCRIPTING_TIME_LIMIT)
+                ctx.execute(thing.script_body,
+                            op_limit=self.SCRIPTING_OP_LIMIT,
+                            time_limit=self.SCRIPTING_TIME_LIMIT)
         except saulscript.exceptions.OperationLimitReached:
-            msg = "%s doesn't have enough energy to perform this action." % thing.name
+            msg = "%s doesn't have enough energy to perform this action." % \
+                thing.name
             self.tell(initiator, msg)
         except saulscript.exceptions.TimeLimitReached:
             msg = "%s took too long to perform this action." % thing.name
             self.tell(initiator, msg)
         thing.power -= ctx.operations_counted / \
             self.SCRIPTING_OPERATION_POWER
-        print "Context: "
-        print ctx
-        print self.script_objects[thing.id]
+        logging.debug("Context: ")
+        logging.debug(ctx)
+        logging.debug(self.script_objects[thing.id])
 
     def __init__(self, controller, datalocation):
         game_exists = os.path.exists(datalocation + '.db')
@@ -222,10 +243,10 @@ class World(object):
         self.recharge_counter = 0
         self.controller = controller
         if game_exists:
-            print 'Loading existing game.'
+            logging.debug('Loading existing game.')
             self.players = self.datastore['players']
             for p in self.players:
-                print 'setting world for %s' % p
+                logging.debug('setting world for %s' % p)
                 self.players[p].set_world(self)
             self.areas = self.datastore['areas']
         else:

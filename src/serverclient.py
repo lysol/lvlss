@@ -1,6 +1,7 @@
 from uuid import uuid4
 import socket
 import json
+import logging
 
 
 class ClientDisconnected(Exception):
@@ -13,14 +14,20 @@ class LvlssServerClient:
 
     def handle_lines(self, lines):
         for line in lines:
-            print line
+            logging.info(line)
 
     def writelines(self, lines):
         data = {"event_name": "clientcrap", "lines": lines}
-        self.socket.send(json.dumps(data) + "\n")
+        try:
+            self.socket.send(json.dumps(data) + "\n")
+        except TypeError:
+            logging.error("Couldn't serialize: %s", repr(data))
 
     def pass_event(self, event):
-        self.socket.send(json.dumps(event.__dict__) + "\n")
+        try:
+            self.socket.send(json.dumps(event.__dict__) + "\n")
+        except TypeError:
+            logging.error("Couldn't serialize: %s", repr(event))
 
     def readlines(self):
         while True:
@@ -32,7 +39,7 @@ class LvlssServerClient:
                 # resource temporarily unavailable
                 if e.errno in (35, 11):
                     break
-                print e.msg
+                logging.error(e.msg)
                 raise ClientDisconnected(e)
             self.buffer += buffer
         buf = self.buffer.split("\n")

@@ -1,3 +1,4 @@
+from uuid import uuid4
 
 
 class Player(object):
@@ -7,7 +8,7 @@ class Player(object):
             "name": self.name,
             "inventory": self.inventory,
             "signed_in": False
-            }
+        }
 
     def send_messages(self, msg):
         self.world.controller.send_message(self, msg)
@@ -23,6 +24,7 @@ class Player(object):
         self.inventory = {}
         self.world = world
         self.signed_in = False
+        self.id = uuid4()
 
     def to_dict(self):
         return self.__getstate__()

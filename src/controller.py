@@ -1,7 +1,8 @@
+import logging
 from world import World
-from event import Event
 import commands
 from command import CommandException
+
 
 class Controller(object):
 
@@ -9,13 +10,15 @@ class Controller(object):
         if target not in self.event_backlog:
             self.event_backlog[target] = []
         self.event_backlog[target].append(event)
-        print self.event_backlog
+        for event in self.event_backlog:
+            logging.debug("Event backlog: %s", repr(event))
 
     def get_event(self, target):
-        if target in self.event_backlog and len(self.event_backlog[target]) > 0:
+        if target in self.event_backlog and \
+                len(self.event_backlog[target]) > 0:
             return self.event_backlog[target].pop(0)
         else:
-            return None  
+            return None
 
     def handle_data(self, player_id, data):
         # this is needed for the set_name command
@@ -32,12 +35,12 @@ class Controller(object):
                 if 'args' not in data:
                     data['args'] = []
                 if player is None and not command.unauthenticated:
-                    raise CommandException(CommandException.COMMAND_NOT_ALLOWED)
+                    raise CommandException(
+                        CommandException.COMMAND_NOT_ALLOWED)
                 func = command.retrieve(data['command'])
                 event = func(player, *data['args'])
                 return event
         raise CommandException(CommandException.UNKNOWN_COMMAND)
-
 
     def initialize_commands(self):
         self.commands = [com(self.world) for

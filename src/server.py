@@ -10,6 +10,7 @@ import logging
 
 logging.basicConfig(level=logging.DEBUG)
 
+
 class LvlssServer:
 
     how_nice = 0.010
@@ -25,7 +26,7 @@ class LvlssServer:
         self.controller = Controller(self)
 
     def remove_client(self, client):
-        print "Removing client: ", client
+        logging.info("Removing client: %s", client)
         sindex = self.socket_list.index(client.socket)
         self.socket_list[sindex].close()
         del(self.clients[self.socket_list[sindex]])
@@ -34,9 +35,9 @@ class LvlssServer:
 
     def handle_event(self, client, event):
         if client.authenticated:
-            print "%s> %s" % (client.player_id, event.name)
+            logging.debug("%s> %s", client.player_id, event.name)
         else:
-            print "%s:%d> %s" % (client.host, client.port, event.name)
+            logging.debug("%s:%d> %s", client.host, client.port, event.name)
         if event is None:
             return
         elif event.name == 'quit':
@@ -53,16 +54,16 @@ class LvlssServer:
     def handle_line(self, client, line):
         # each line is a json payload
         if client.authenticated:
-            print "%s> %s" % (client.player_id, line)
+            logging.debug("%s> %s", client.player_id, line)
         else:
-            print "%s:%d> %s" % (client.host, client.port, line)
+            logging.debug("%s:%d> %s", client.host, client.port, line)
         try:
             data = json.loads(line)
             # this is bubbled up if need be
             try:
                 event = self.controller.handle_data(client.player_id, data)
             except CommandException as e:
-                print e.msg
+                logging.error(e.msg)
                 event = Event('clientcrap', {"lines": [e.msg, ]})
                 if event is not None:
                     self.handle_event(client, event)
@@ -70,7 +71,7 @@ class LvlssServer:
             if event is not None:
                 self.handle_event(client, event)
         except ValueError:
-            print "Malformed payload from client ignored."
+            logging.error("Malformed payload from client ignored.")
 
     def handle_lines(self, client, lines):
         return [self.handle_line(client, line) for line in lines]
@@ -96,14 +97,14 @@ class LvlssServer:
                         sockfd.setblocking(0)
                         self.socket_list.append(sockfd)
                         self.clients[sockfd] = LvlssServerClient(sockfd, *addr)
-                        print "Connection from (%s, %s)" % addr
+                        logging.info("Connection from (%s, %s)", *addr)
                     else:
                         # client data
                         client = self.clients[read_socket]
                         try:
                             self.handle_lines(client, client.readlines())
                         except ClientDisconnected:
-                            print 'Client disconnected.'
+                            logging.info('Client disconnected.')
                             self.remove_client(client)
 
                 for c in filter(lambda c: self.clients[c].authenticated,
