@@ -5,6 +5,7 @@ class Player(object):
 
     def __getstate__(self):
         return {
+            "id": self.id,
             "name": self.name,
             "inventory": self.inventory,
             "signed_in": False

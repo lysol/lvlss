@@ -12,7 +12,8 @@ class Area(object):
             "script_body": self.script_body,
             "power": self.power,
             "max_power": self.max_power,
-            "recharge_rate": self.recharge_rate
+            "recharge_rate": self.recharge_rate,
+            "players": self.players
             }
 
     def link_to(self, area, one_way=False):
@@ -35,13 +36,15 @@ class Area(object):
         if self.power > self.max_power:
             self.power = self.max_power
 
-    def __init__(self, name, description, max_power=1000, recharge_rate=50):
+    def __init__(self, name, description, max_power=1000, recharge_rate=50, id=None):
         self.name = name
         self.description = description
         self.links_to = {}
         self.lobjects = {}
         self.players = []
-        self.id = str(uuid4())
+        if id is None:
+            id = str(uuid4())
+        self.id = id
         self.script_body = ''
         self.max_power = max_power
         self.recharge_rate = recharge_rate

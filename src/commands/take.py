@@ -1,5 +1,5 @@
 from command import Command, is_command, CommandException
-
+import logging
 
 class Take(Command):
 
@@ -19,6 +19,7 @@ class Take(Command):
             del(player.location.lobjects[item_id])
             self.send_player_location_inventory(player)
             self.send_player_inventory(player)
+            logging.debug("emit take event")
             self.world.emit_event('take', {
                 'item': item.to_dict(),
                 'player': player.to_dict(),

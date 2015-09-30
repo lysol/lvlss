@@ -63,7 +63,8 @@ class LvlssClient(object):
                     except IOError:
                         self.append("Couldn't read file: %s" % script_path)
         except ValueError:
-            pass
+            self.append("Couldn't read command")
+            return
         return data
 
     def handle_event(self, event):

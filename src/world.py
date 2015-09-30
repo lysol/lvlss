@@ -89,12 +89,18 @@ class World(object):
                 return self.players[p].inventory[obj_id]
 
     def tell_owner(self, source, msg):
+        logging.debug("tell_owner: Checking source %s", source)
         if hasattr(source, 'id'):
+            logging.debug("Source has id attr")
             source = source.id
         for l in self.areas:
+            logging.debug("tell_owner: checking area %s", l)
             if source in self.areas[l].lobjects:
                 self.tell(self.areas[l], msg)
         for p in self.players:
+            logging.debug("tell_owner: checking player %s", p)
+            logging.debug("tell_owner: player %s's inventory: %s",
+                          p, repr(self.players[p].inventory))
             if source in self.players[p].inventory:
                 self.tell(self.players[p], msg)
 
@@ -198,15 +204,20 @@ class World(object):
         return reduce(_in_scope, scope)
 
     def emit_event(self, name, data, scope=None):
+        logging.debug("Emitting event %s", name)
+        logging.debug("Event handlers: %s", repr(self.event_handlers))
         if name in self.event_handlers:
+            logging.debug("Found event handlers for %s", name)
             for obj_id in self.event_handlers[name]:
                 obj = self.find_object(obj_id)
+                logging.debug("Checking %s" % repr(obj))
                 try:
                     if scope is None or self.in_scope(scope, obj):
                         func = self.event_handlers[name][obj_id]
                         logging.debug("Event handler: %s(%s)", func, data)
                         func(data)
                 except saulscript.exceptions.SaulException as e:
+                    logging.error("Encountered scripting error: %s", e)
                     obj = self.find_object(obj_id)
                     printed_exception = "Scripting error on object %s at line %d: %s" % \
                         (obj.name, e.line_num, repr(e))
