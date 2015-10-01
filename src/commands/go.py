@@ -1,9 +1,9 @@
 from command import Command, is_command, CommandException
-from event import Event
 from look import Look
 
+
 class Go(Command):
-    
+
     @is_command('1')
     def one(self, player, *args):
         return self.go(player, '1')
@@ -26,13 +26,20 @@ class Go(Command):
             raise CommandException(CommandException.NOT_ENOUGH_ARGUMENTS)
         area_id = args[0]
         if area_id in player.location.links_to:
-            player.location.players.remove(player)
-            player.location = player.location.links_to[area_id]
+            old_location = player.location
+            old_location.players.remove(player)
+            player.location = old_location.links_to[area_id]
             player.location.players.append(player)
-
+            self.world.emit_event('depart', {
+                'area': old_location.to_dict(),
+                'player': player.to_dict()
+            }, scope=[old_location])
+            self.world.emit_event('arrive', {
+                'area': player.location.to_dict(),
+                'player': player.to_dict()
+            }, scope=[player.location])
             # hacky thing....maybe needs a better interface
             look = Look(self.world)
             return look.look(player)
         else:
             raise CommandException(CommandException.IMPOSSIBLE_PATH)
-

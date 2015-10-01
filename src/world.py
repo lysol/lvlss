@@ -130,7 +130,8 @@ class World(object):
 
     def tell_location(self, location, msg):
         logging.debug("tell_location: Ok, telling %s '%s'", location, msg)
-        logging.debug("tell_location: players in location: %s", repr(location.players))
+        logging.debug("tell_location: players in location: %s",
+                      repr(location.players))
         for player in location.players:
             logging.debug("tell_location: telling %s", player)
             self.tell_player(player, msg)
@@ -182,6 +183,8 @@ class World(object):
         return context
 
     def register_event_handler(self, obj_id, name, callback):
+        logging.debug(
+            "Received a request to register an event handler for " + name)
         if isinstance(name, saulscript.syntax_tree.nodes.Node):
             name = name.value
         logging.debug("Registering event handler for %s" % name)
