@@ -31,22 +31,22 @@ class LvlssClient(object):
     def _preprocess_command(self, data):
         try:
             if data['command'] in ('take', 'get'):
-                target_index = int(data['args'][0]) - 1
                 try:
+                    target_index = int(data['args'][0]) - 1
                     item_id = self.local_items[target_index]['id']
                     data['args'][0] = item_id
                 except IndexError:
                     return data
             if data['command'] == 'go':
-                target_index = int(data['args'][0]) - 1
                 try:
+                    target_index = int(data['args'][0]) - 1
                     area_id = self.local_areas[target_index]['id']
                     data['args'][0] = area_id
                 except IndexError:
                     return data
             if data['command'] in ('drop', 'script', 'getscript', 'setscript'):
-                target_index = int(data['args'][0]) - 1
                 try:
+                    target_index = int(data['args'][0]) - 1
                     item_id = self.inventory_items[target_index]['id']
                     data['args'][0] = item_id
                 except IndexError:
