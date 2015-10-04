@@ -1,0 +1,44 @@
+<script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/socket.io/0.9.16/socket.io.min.js"></script>
+<script type="text/javascript" src="https://code.jquery.com/jquery-2.1.4.min.js"></script>
+<script type="text/javascript" charset="utf-8">
+var socket = io.connect('http://' + document.domain + ':' + location.port);
+socket.on('connect', function(data) {
+    //
+});
+
+socket.on('login-success', function(data) {
+    $('#login-form').hide();
+    $('#game').show();
+});
+
+socket.on('clientcrap', function(data) {
+    $('#clientcrap').text($('#clientcrap').text() + data['lines'].join('\n') + "\n");
+});
+
+$(document).on('ready', function() {
+    $('#game').hide();
+
+    $('#login-form').on('submit', function() {
+        console.log('hey');
+        var data = {
+            username: $('[name="username"]').val()
+        };
+        socket.emit('login', data);
+        return false;
+    });
+});
+
+
+
+</script>
+
+<body>
+<form id="login-form">
+<input name="username"><button id="login">Login</button>
+</form>
+
+<form id="game">
+<textarea name="clientcrap" id="clientcrap"></textarea>
+</form>
+
+</body>
