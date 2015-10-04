@@ -51,6 +51,7 @@ class World(object):
         self.areas[quarry_pond.id] = quarry_pond
 
     def tick(self):
+        # logging.debug("World: tick (%d, %d)", self.sync_counter, self.recharge_counter)
         self.sync_counter += 1
         self.recharge_counter += 1
         if self.sync_counter > self.SYNC_CYCLES_CHECK:

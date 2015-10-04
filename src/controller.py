@@ -21,6 +21,7 @@ class Controller(object):
             return None
 
     def handle_data(self, player_id, data):
+        logging.debug("Controller: Handle data: %s, %s", player_id, repr(data))
         # this is needed for the set_name command
         if player_id is not None:
             player = self.world.players[player_id]
@@ -28,6 +29,7 @@ class Controller(object):
             player = None
 
         if 'command' not in data:
+            logging.error("Malformed command: %s", repr(data))
             raise CommandException(CommandException.UNKNOWN_COMMAND)
 
         for command in self.commands:
@@ -40,6 +42,7 @@ class Controller(object):
                 func = command.retrieve(data['command'])
                 event = func(player, *data['args'])
                 return event
+        logging.info("Received invalid command: %s", data['command'])
         raise CommandException(CommandException.UNKNOWN_COMMAND)
 
     def initialize_commands(self):
@@ -47,6 +50,7 @@ class Controller(object):
                          com in commands.all_commands]
 
     def tick(self):
+        # logging.debug("Controller: tick")
         self.world.tick()
 
     def remove_player(self, name):

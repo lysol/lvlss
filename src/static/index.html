@@ -26,12 +26,30 @@ $(document).on('ready', function() {
         socket.emit('login', data);
         return false;
     });
+
+    $('#game').on('submit', function() {
+        var cmd_input = $('#command');
+        var cmd_text = cmd_input.val();
+        if (cmd_text.length > 0) {
+            parts = cmd_text.split(' ');
+            command = parts.shift();
+            socket.emit(command, parts);
+            cmd_input.val('');
+        }
+        return false;
+    })
 });
 
 
 
 </script>
-
+<style type="text/css">
+    textarea {
+        width: 500px;
+        height: 300px;
+        display: block;
+    }
+</style>
 <body>
 <form id="login-form">
 <input name="username"><button id="login">Login</button>
@@ -39,6 +57,8 @@ $(document).on('ready', function() {
 
 <form id="game">
 <textarea name="clientcrap" id="clientcrap"></textarea>
+<textarea name="area" id="area"></textarea>
+<input name="command" id="command"><button id="send-command">Send</button>
 </form>
 
 </body>

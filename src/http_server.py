@@ -41,7 +41,8 @@ class CommandHandler(object):
     def handle_event(self, user, data):
         responses = []
         try:
-            event = self.controller.handle_data(user.get_id(), data)
+            user_id = user.get_id() if user is not None else None
+            event = self.controller.handle_data(user_id, data)
         except CommandException as e:
             logging.error(e.msg)
             event = Event('clientcrap', {"lines": [e.msg]})
@@ -56,14 +57,14 @@ class CommandHandler(object):
         self.rooms.remove(room)
 
     def tick(self, sleep_time, tag):
-        logging.debug("Doing CommandHandler tick(). Checking for events")
+        # logging.debug("Doing CommandHandler tick(). Checking for events")
         for room in self.rooms:
             logging.debug("Checking %s", room)
             event = self.controller.get_event(room)
             if event is not None:
                 logging.debug("Emitting event %s to %s", event['event_name'], room)
                 emit(event['event_name'], event, room=room)
-        logging.debug("Doing Controller.tick() now")
+        # logging.debug("Doing Controller.tick() now")
         self.controller.tick()
         time.sleep(sleep_time)
 
@@ -84,7 +85,7 @@ def run_regularly(function, intervals, sleep_time=0.1, round_length=1):
                 gevent.sleep((div * round_length) - after - (offset / len(intervals)))
 
 def fire_ticker(func):
-    gevent.spawn(run_regularly, func, [0.2, 0.1, 1.0]);
+    gevent.spawn(run_regularly, func, [0.01, 0.01, 1]);
 
 def authenticated_only(f):
     @functools.wraps(f)
@@ -105,6 +106,18 @@ login_manager = LoginManager()
 login_manager.init_app(app)
 
 
+def handle_responses(responses):
+    for response in responses:
+        try:
+            print repr(response)
+            print dir(response)
+            print response.name
+            rdict = response.to_dict()
+            print rdict
+            emit(response.name, rdict)
+        except IndexError:
+            emit('clientcrap', 'Received malformed command')
+
 @login_manager.user_loader
 def load_user(user_id):
     return controller.get_user(user_id)
@@ -119,6 +132,9 @@ def login(data):
     if 'username' in data:
         login_user(User(data['username']))
     join_room(data['username'])
+    cmd_data = {"command": 'nick', "args": [data['username']]}
+    responses = cmd_handler.handle_event(None, cmd_data)
+    handle_responses(responses)
     emit('login-success', {"username": data['username']})
 
 @socketio.on('logout')
@@ -133,8 +149,7 @@ def cmd(data):
     if not current_user.is_authenticated and data['command'] != 'login':
         request.namespace.disconnect()
     responses = cmd_handler.handle_event(current_user, data)
-    for response in response:
-        emit(response['event_name'], response)
+    handle_responses(responses)
 
 if __name__ == '__main__':
     try:
