@@ -40,31 +40,30 @@ class CommandHandler(object):
         self.app = app
 
     def handle_event(self, user, data):
-        responses = []
         try:
             user_id = user.get_id() if user is not None else None
+            logging.debug("Handling event %s for user %s", repr(data), str(user_id))
             event = self.controller.handle_data(user_id, data)
         except CommandException as e:
             logging.error(e.msg)
             event = Event('clientcrap', {"lines": [e.msg]})
-            if event is not None:
-                responses.append(event)
-        return responses
+        return event
 
     def subscribe_room(self, room):
         self.rooms.append(room)
 
     def cancel_room(self, room):
-        self.rooms.remove(room)
+        if room in self.rooms:
+            self.rooms.remove(room)
 
     def tick(self, sleep_time, tag):
         # logging.debug("Doing CommandHandler tick(). Checking for events")
         for room in self.rooms:
-            logging.debug("Checking %s", room)
+            # logging.debug("Checking %s", room)
             event = self.controller.get_event(room)
             if event is not None:
-                logging.debug("Emitting event %s to %s", event['event_name'], room)
-                emit(event['event_name'], event, room=room)
+                logging.debug("Emitting event %s to %s", event.name, room)
+                socketio.emit(event.name, event.to_dict(), room=room)
         # logging.debug("Doing Controller.tick() now")
         self.controller.tick()
         time.sleep(sleep_time)
@@ -110,17 +109,16 @@ login_manager = LoginManager()
 login_manager.init_app(app)
 
 
-def handle_responses(responses):
-    for response in responses:
-        try:
-            print repr(response)
-            print dir(response)
-            print response.name
-            rdict = response.to_dict()
-            print rdict
-            emit(response.name, rdict)
-        except IndexError:
-            emit('clientcrap', 'Received malformed command')
+def handle_response(response):
+    if response is None:
+        logging.debug("Handling None")
+        return
+    try:
+        rdict = response.to_dict()
+        emit(response.name, rdict)
+    except IndexError:
+        emit('clientcrap', 'Received malformed command')
+
 
 @login_manager.user_loader
 def load_user(user_id):
@@ -132,29 +130,39 @@ def load_user(user_id):
 def root():
         return app.send_static_file('index.html')
 
+
 @socketio.on('login')
 def login(data):
     if 'username' in data:
         login_user(User(data['username']))
     join_room(data['username'])
     cmd_data = {"command": 'nick', "args": [data['username']]}
-    responses = cmd_handler.handle_event(None, cmd_data)
-    handle_responses(responses)
-    emit('login-success', {"username": data['username']})
+    response_event = cmd_handler.handle_event(None, cmd_data)
+    logging.debug(response_event)
+    if response_event is not None and response_event.name == 'name_set':
+        handle_response(response_event)
+        emit('login-success', {"username": data['username']})
+        cmd_handler.subscribe_room(data['username'])
+    else:
+        emit('login-failure', {"username": data['username']})
+
 
 @socketio.on('logout')
 @authenticated_only
 def logout(data):
     if 'username' in data:
         logout_user(data['username'])
+        cmd_handler.cancel_room(data['username'])
     leave_room(data['username'])
+
 
 @socketio.on('cmd')
 def cmd(data):
     if not current_user.is_authenticated:
         request.namespace.disconnect()
-    responses = cmd_handler.handle_event(current_user, data)
-    handle_responses(responses)
+    response_event = cmd_handler.handle_event(current_user, data)
+    handle_response(response_event)
+
 
 if __name__ == '__main__':
     try:
