@@ -31,9 +31,9 @@ $(document).on('ready', function() {
         var cmd_input = $('#command');
         var cmd_text = cmd_input.val();
         if (cmd_text.length > 0) {
-            parts = cmd_text.split(' ');
-            command = parts.shift();
-            socket.emit(command, parts);
+            var parts = cmd_text.split(' ');
+            var command = parts.shift();
+            socket.emit('cmd', {command: command, args: parts});
             cmd_input.val('');
         }
         return false;

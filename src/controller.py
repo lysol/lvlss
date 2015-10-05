@@ -6,6 +6,9 @@ from command import CommandException
 
 class Controller(object):
 
+    def get_user(self, username):
+        return self.world.players[username] if username in self.world.players else None 
+
     def store_event(self, target, event):
         if target not in self.event_backlog:
             self.event_backlog[target] = []

@@ -14,9 +14,10 @@ import time
 
 class User(object):
 
-    def __init__(self, user_id):
+    def __init__(self, user_id, player=None):
         self.user_id = user_id
         self.authenticated = False
+        self.player = player
 
     def is_authenticated(self):
         return self.authenticated
@@ -67,6 +68,9 @@ class CommandHandler(object):
         # logging.debug("Doing Controller.tick() now")
         self.controller.tick()
         time.sleep(sleep_time)
+
+    def get_user(self, username):
+        return self.controller.get_user(username)
 
     def stop(self):
         self.controller.world.stop()
@@ -120,7 +124,8 @@ def handle_responses(responses):
 
 @login_manager.user_loader
 def load_user(user_id):
-    return controller.get_user(user_id)
+    player = cmd_handler.get_user(user_id)
+    return User(user_id, player=player)
 
 
 @app.route('/')
@@ -146,7 +151,7 @@ def logout(data):
 
 @socketio.on('cmd')
 def cmd(data):
-    if not current_user.is_authenticated and data['command'] != 'login':
+    if not current_user.is_authenticated:
         request.namespace.disconnect()
     responses = cmd_handler.handle_event(current_user, data)
     handle_responses(responses)
