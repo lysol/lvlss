@@ -56,7 +56,7 @@ class CommandHandler(object):
         if room in self.rooms:
             self.rooms.remove(room)
 
-    def tick(self, sleep_time, tag):
+    def tick(self):
         # logging.debug("Doing CommandHandler tick(). Checking for events")
         for room in self.rooms:
             # logging.debug("Checking %s", room)
@@ -66,7 +66,7 @@ class CommandHandler(object):
                 socketio.emit(event.name, event.to_dict(), room=room)
         # logging.debug("Doing Controller.tick() now")
         self.controller.tick()
-        time.sleep(sleep_time)
+
 
     def get_user(self, username):
         return self.controller.get_user(username)
@@ -75,20 +75,13 @@ class CommandHandler(object):
         self.controller.world.stop()
 
 
-def run_regularly(function, intervals, sleep_time=0.1, round_length=1):
-    _, init  = divmod(time.time(), 1)
-    gevent.sleep(1 - init)
+def run_regularly(function, delay=0.25):
     while True:
-        before = time.time()
-        _, offset = divmod(before, round_length)
-        for div in intervals:
-            function(sleep_time, div)
-            after = time.time() - before
-            if after < (div * round_length):
-                gevent.sleep((div * round_length) - after - (offset / len(intervals)))
+        function()
+        gevent.sleep(delay)
 
 def fire_ticker(func):
-    gevent.spawn(run_regularly, func, [0.01, 0.01, 1]);
+    gevent.spawn(run_regularly, func);
 
 def authenticated_only(f):
     @functools.wraps(f)
