@@ -26,6 +26,7 @@ class World(object):
         self.players[name].set_location(self.areas[self.areas.keys()[0]])
         self.players[name].location.players.append(self.players[name])
         self.players[name].signed_in = True
+        return self.players[name]
 
     def remove_player(self, player):
         if player is None:

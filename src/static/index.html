@@ -12,7 +12,11 @@ socket.on('login-success', function(data) {
 });
 
 socket.on('clientcrap', function(data) {
-    $('#clientcrap').text($('#clientcrap').text() + data['lines'].join('\n') + "\n");
+    $('#clientcrap').html($('#clientcrap').html() + data['lines'].join('<br>\n') + "<br>\n");
+});
+
+socket.on('location', function(data) {
+    $('#area').html(data.area.name + '<br>\n' + data.area.description);
 });
 
 $(document).on('ready', function() {
@@ -44,8 +48,8 @@ $(document).on('ready', function() {
 
 </script>
 <style type="text/css">
-    textarea {
-        width: 400px;
+    div {
+        width: 350px;
         height: 200px;
         display: block;
     }
@@ -56,8 +60,8 @@ $(document).on('ready', function() {
 </form>
 
 <form id="game">
-<textarea name="clientcrap" id="clientcrap"></textarea>
-<textarea name="area" id="area"></textarea>
+<div name="clientcrap" id="clientcrap"></div>
+<div name="area" id="area"></div>
 <input name="command" id="command"><button id="send-command">Send</button>
 </form>
 

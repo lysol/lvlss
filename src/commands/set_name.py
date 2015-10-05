@@ -11,5 +11,8 @@ class SetName(Command):
     def nick(self, player, *args):
         if self.world.player_name_exists(args[0]):
             return Event('name_collision')
-        self.world.add_player(args[0])
+        player = self.world.add_player(args[0])
+        self.send_player_location(player)
+        self.send_player_location_areas(player)
+        self.send_player_location_inventory(player)
         return Event('name_set', {"player_name": args[0]})
