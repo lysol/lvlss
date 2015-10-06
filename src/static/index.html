@@ -11,88 +11,93 @@
     <title>lvlss</title>
 
     <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/socket.io/0.9.16/socket.io.min.js"></script>
-    <script type="text/javascript" src="bower_components/angular/angular.min.js"></script>
-    <script type="text/javascript" src="bower_components/angular-ui-router/release/angular-ui-router.min.js"></script>  
-    <script type="text/javascript" src="scripts/ng-game.js"></script>
+    <script type="text/javascript" src="bower_components/angular/angular.js"></script>
+    <script type="text/javascript" src="bower_components/angular-ui-router/release/angular-ui-router.min.js"></script>
+    <script type="text/javascript" src="js/lvlss.js"></script>
+    <script type="text/javascript" src="js/gameController.js"></script>
+    <script type="text/javascript" src="js/loginController.js"></script>
     <script type="text/javascript" charset="utf-8">
-        var socket = io.connect('http://' + document.domain + ':' + location.port + '/lvlss');
-        socket.on('connect', function(data) {
-        //
-        });
-
-        socket.on('disconnect', function(data) {
-        $('body')
-            .empty()
-            .html('<h2>Disconnected :(</h2>');
-        });
-
-        socket.on('login-success', function(data) {
-        $('#login-form').hide();
-        $('#game').show();
-        });
-
-        socket.on('clientcrap', function(data) {
-        $('#clientcrap').html($('#clientcrap').html() + data['lines'].join('<br>\n') + "<br>\n");
-        });
-
-        socket.on('location', function(data) {
-        $('#area').html(data.area.name + '<br>\n' + data.area.description);
-        });
-
-        socket.on('inventory', function(data) {
-        var inv = $('#inventory');
-        inv.empty();
-        for(var i=0; i<data.inventory.length; i++) {
-            var item = data.inventory[i];
-            inv.append($('<p><a href="#">' + item.name + '</a></p>'));
-        }
-        });
-
-        socket.on('location_inventory', function(data) {
-        var inv = $('#area-inventory');
-        inv.empty();
-        for(var i=0; i<data.inventory.length; i++) {
-            var item = data.inventory[i];
-            inv.append($('<p>' + item.name + ' <a href="#" data-item-id="' + item.id + '" class="take">take</a></p>'));
-        }
-        });
-
-        $(document).on('ready', function() {
-            $('#game').hide();
-
-            $('#login-form').on('submit', function() {
-                console.log('hey');
-                var data = {
-                    username: $('[name="username"]').val()
-                };
-                socket.emit('login', data);
-                return false;
+        var unused = function() {
+            var socket = io.connect('http://' + document.domain + ':' + location.port + '/lvlss');
+            socket.on('connect', function(data) {
+            //
             });
 
-            $('#game').on('submit', function() {
-                var cmd_input = $('#command');
-                var cmd_text = cmd_input.val();
-                if (cmd_text.length > 0) {
-                    var parts = cmd_text.split(' ');
-                    var command = parts.shift();
-                    socket.emit('cmd', {command: command, args: parts});
-                    cmd_input.val('');
-                }
-                return false;
-            })
-
-            $('.take').on('click', function() {
-                socket.emit('cmd', {command: 'take', args: [$(this).data('itemId')]});
-                return false;
+            socket.on('disconnect', function(data) {
+            $('body')
+                .empty()
+                .html('<h2>Disconnected :(</h2>');
             });
-        });
+
+            socket.on('login-success', function(data) {
+            $('#login-form').hide();
+            $('#game').show();
+            });
+
+            socket.on('clientcrap', function(data) {
+            $('#clientcrap').html($('#clientcrap').html() + data['lines'].join('<br>\n') + "<br>\n");
+            });
+
+            socket.on('location', function(data) {
+            $('#area').html(data.area.name + '<br>\n' + data.area.description);
+            });
+
+            socket.on('inventory', function(data) {
+            var inv = $('#inventory');
+            inv.empty();
+            for(var i=0; i<data.inventory.length; i++) {
+                var item = data.inventory[i];
+                inv.append($('<p><a href="#">' + item.name + '</a></p>'));
+            }
+            });
+
+            socket.on('location_inventory', function(data) {
+            var inv = $('#area-inventory');
+            inv.empty();
+            for(var i=0; i<data.inventory.length; i++) {
+                var item = data.inventory[i];
+                inv.append($('<p>' + item.name + ' <a href="#" data-item-id="' + item.id + '" class="take">take</a></p>'));
+            }
+            });
+
+            $(document).on('ready', function() {
+                $('#game').hide();
+
+                $('#login-form').on('submit', function() {
+                    console.log('hey');
+                    var data = {
+                        username: $('[name="username"]').val()
+                    };
+                    socket.emit('login', data);
+                    return false;
+                });
+
+                $('#game').on('submit', function() {
+                    var cmd_input = $('#command');
+                    var cmd_text = cmd_input.val();
+                    if (cmd_text.length > 0) {
+                        var parts = cmd_text.split(' ');
+                        var command = parts.shift();
+                        socket.emit('cmd', {command: command, args: parts});
+                        cmd_input.val('');
+                    }
+                    return false;
+                })
+
+                $('.take').on('click', function() {
+                    socket.emit('cmd', {command: 'take', args: [$(this).data('itemId')]});
+                    return false;
+                });
+            });
+        }
     </script>
     <link type="text/css" href="/css/style.css" rel="stylesheet">
 </head>
 
 <body ng-app="lvlss">
     <div class="content">
-        <div ui-view></div>
+        <div ui-view>
+        </div>
     </div>
 </body>
 </html>
