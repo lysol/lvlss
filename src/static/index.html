@@ -6,6 +6,12 @@ socket.on('connect', function(data) {
     //
 });
 
+socket.on('disconnect', function(data) {
+    $('body')
+        .empty()
+        .html('<h2>Disconnected :(</h2>');
+});
+
 socket.on('login-success', function(data) {
     $('#login-form').hide();
     $('#game').show();
