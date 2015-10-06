@@ -1,4 +1,4 @@
-from flask import Flask, request
+from flask import Flask, request, send_from_directory, session
 from flask.ext.login import current_user, login_user, logout_user, LoginManager
 from flask.ext.socketio import SocketIO, emit, send, join_room, leave_room
 from event import Event
@@ -10,6 +10,7 @@ import logging
 import functools
 import gevent
 import time
+from uuid import uuid4
 
 
 class User(object):
@@ -32,12 +33,13 @@ class User(object):
         return self.user_id
 
 
-class CommandHandler(object):
+class LvlssMiddleware(object):
 
     def __init__(self, app):
         self.rooms = []
         self.controller = Controller(self)
         self.app = app
+        self.sessions = {}
 
     def handle_event(self, user, data):
         try:
@@ -49,21 +51,21 @@ class CommandHandler(object):
             event = Event('clientcrap', {"lines": [e.msg]})
         return event
 
-    def subscribe_room(self, room):
+    def _subscribe_room(self, room):
         self.rooms.append(room)
 
-    def cancel_room(self, room):
+    def _cancel_room(self, room):
         if room in self.rooms:
             self.rooms.remove(room)
 
     def tick(self):
-        # logging.debug("Doing CommandHandler tick(). Checking for events")
+        # logging.debug("Doing LvlssMiddleware tick(). Checking for events")
         for room in self.rooms:
             # logging.debug("Checking %s", room)
             event = self.controller.get_event(room)
             if event is not None:
                 logging.debug("Emitting event %s to %s", event.name, room)
-                socketio.emit(event.name, event.to_dict(), room=room)
+                socketio.emit(event.name, event.to_dict(), room=room, namespace='/lvlss')
         # logging.debug("Doing Controller.tick() now")
         self.controller.tick()
 
@@ -73,6 +75,23 @@ class CommandHandler(object):
 
     def stop(self):
         self.controller.world.stop()
+
+    def register_user_session(self, session_id, user_id):
+        self.sessions[session_id] = user_id
+        self._subscribe_room(user_id)
+        join_room(user_id)
+
+    def remove_user_session(self, session_id):
+        logging.debug("Removing session " + str(session_id))
+        try:
+            user_id = self.sessions[session_id]
+            self._cancel_room(user_id)
+            leave_room(user_id)
+            logout_user()
+            self.controller.remove_player(user_id)
+            del(self.sessions[session_id])
+        except KeyError:
+            logging.debug("Couldn't find user ID for session " + str(session_id))
 
 
 def run_regularly(function, delay=0.25):
@@ -97,7 +116,7 @@ logging.basicConfig(level=logging.DEBUG)
 app = Flask(__name__, static_url_path='/static')
 app.config['SECRET_KEY'] = 'dlkgjfdlkgfgkdjfglkfjglkdjfglk23423423#@###'
 socketio = SocketIO(app)
-cmd_handler = CommandHandler(app)
+cmd_handler = LvlssMiddleware(app)
 login_manager = LoginManager()
 login_manager.init_app(app)
 
@@ -108,9 +127,9 @@ def handle_response(response):
         return
     try:
         rdict = response.to_dict()
-        emit(response.name, rdict)
+        emit(response.name, rdict, namespace='/lvlss')
     except IndexError:
-        emit('clientcrap', 'Received malformed command')
+        emit('clientcrap', 'Received malformed command', namespace='/lvlss')
 
 
 @login_manager.user_loader
@@ -124,37 +143,49 @@ def root():
         return app.send_static_file('index.html')
 
 
-@socketio.on('login')
+@socketio.on('login', namespace='/lvlss')
 def login(data):
     if 'username' in data:
         login_user(User(data['username']))
-    join_room(data['username'])
     cmd_data = {"command": 'nick', "args": [data['username']]}
     response_event = cmd_handler.handle_event(None, cmd_data)
     logging.debug(response_event)
     if response_event is not None and response_event.name == 'name_set':
         handle_response(response_event)
-        emit('login-success', {"username": data['username']})
-        cmd_handler.subscribe_room(data['username'])
+        emit('login-success', {"username": data['username']}, namespace='/lvlss')
+        cmd_handler.register_user_session(session['id'], data['username'])
     else:
-        emit('login-failure', {"username": data['username']})
+        emit('login-failure', {"username": data['username']}, namespace='/lvlss')
 
 
-@socketio.on('logout')
+@socketio.on('logout', namespace='/lvlss')
 @authenticated_only
 def logout(data):
-    if 'username' in data:
-        logout_user(data['username'])
-        cmd_handler.cancel_room(data['username'])
-    leave_room(data['username'])
+    cmd_handler.remove_user_session(session['id'])
 
 
-@socketio.on('cmd')
+@socketio.on('connect', namespace='/lvlss')
+def connect():
+    session['id'] = str(uuid4())
+    logging.debug("New session: " + str(session['id']))
+
+
+@socketio.on('disconnect', namespace='/lvlss')
+def disconnect():
+    cmd_handler.remove_user_session(session['id'])
+
+
+@socketio.on('cmd', namespace='/lvlss')
 def cmd(data):
     if not current_user.is_authenticated:
         request.namespace.disconnect()
     response_event = cmd_handler.handle_event(current_user, data)
     handle_response(response_event)
+
+
+@app.route("/<path:path>")
+def catchall(path):
+    return send_from_directory(app.static_folder, path)
 
 
 if __name__ == '__main__':

@@ -17,13 +17,13 @@ class Controller(object):
             logging.debug("Event backlog: %s", repr(event))
 
     def get_event(self, target):
-        logging.debug("Getting an event for %s", target)
+        # logging.debug("Getting an event for %s", target)
         if target in self.event_backlog and \
                 len(self.event_backlog[target]) > 0:
-            logging.debug("Found one. Send it.")
+            logging.debug("Sending event to %s", target)
             return self.event_backlog[target].pop(0)
         else:
-            logging.debug("None found.")
+            # logging.debug("None found.")
             return None
 
     def handle_data(self, player_id, data):

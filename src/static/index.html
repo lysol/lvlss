@@ -1,7 +1,7 @@
 <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/socket.io/0.9.16/socket.io.min.js"></script>
 <script type="text/javascript" src="https://code.jquery.com/jquery-2.1.4.min.js"></script>
 <script type="text/javascript" charset="utf-8">
-var socket = io.connect('http://' + document.domain + ':' + location.port);
+var socket = io.connect('http://' + document.domain + ':' + location.port + '/lvlss');
 socket.on('connect', function(data) {
     //
 });
@@ -48,10 +48,23 @@ $(document).on('ready', function() {
 
 </script>
 <style type="text/css">
-    div {
+    @font-face {
+        font-family: vga;
+        src: url('../fonts/vga.ttf') format('truetype');
+    }
+    body {
+        font-family: vga;
+        background-color: #000;
+        color: #CCC;
+    }
+    div.cell {
         width: 350px;
         height: 200px;
-        display: block;
+        display: inline-block;
+        border: 2px solid #CCC;
+        margin: 2px;
+        padding: 4px;
+        overflow-y: scroll;
     }
 </style>
 <body>
@@ -60,8 +73,8 @@ $(document).on('ready', function() {
 </form>
 
 <form id="game">
-<div name="clientcrap" id="clientcrap"></div>
-<div name="area" id="area"></div>
+<div class="cell" name="clientcrap" id="clientcrap"></div>
+<div class="cell" name="area" id="area"></div>
 <input name="command" id="command"><button id="send-command">Send</button>
 </form>
 
