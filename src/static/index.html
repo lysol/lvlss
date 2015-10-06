@@ -1,87 +1,98 @@
-<script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/socket.io/0.9.16/socket.io.min.js"></script>
-<script type="text/javascript" src="https://code.jquery.com/jquery-2.1.4.min.js"></script>
-<script type="text/javascript" charset="utf-8">
-var socket = io.connect('http://' + document.domain + ':' + location.port + '/lvlss');
-socket.on('connect', function(data) {
-    //
-});
+<!DOCTYPE html>
+<!--[if lt IE 7]>      <html class="no-js lt-ie9 lt-ie8 lt-ie7"> <![endif]-->
+<!--[if IE 7]>         <html class="no-js lt-ie9 lt-ie8"> <![endif]-->
+<!--[if IE 8]>         <html class="no-js lt-ie9"> <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js"> <!--<![endif]-->
+<head>
+    <meta charset="utf-8">
+    <meta content="IE=edge,chrome=1" http-equiv="X-UA-Compatible">
+    <meta content="width=device-width" name="viewport">
+    <meta content="yes" name="apple-mobile-web-app-capable">
+    <title>lvlss</title>
 
-socket.on('disconnect', function(data) {
-    $('body')
-        .empty()
-        .html('<h2>Disconnected :(</h2>');
-});
+    <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/socket.io/0.9.16/socket.io.min.js"></script>
+    <script type="text/javascript" src="bower_components/angular/angular.min.js"></script>
+    <script type="text/javascript" src="bower_components/angular-ui-router/release/angular-ui-router.min.js"></script>  
+    <script type="text/javascript" src="scripts/ng-game.js"></script>
+    <script type="text/javascript" charset="utf-8">
+        var socket = io.connect('http://' + document.domain + ':' + location.port + '/lvlss');
+        socket.on('connect', function(data) {
+        //
+        });
 
-socket.on('login-success', function(data) {
-    $('#login-form').hide();
-    $('#game').show();
-});
+        socket.on('disconnect', function(data) {
+        $('body')
+            .empty()
+            .html('<h2>Disconnected :(</h2>');
+        });
 
-socket.on('clientcrap', function(data) {
-    $('#clientcrap').html($('#clientcrap').html() + data['lines'].join('<br>\n') + "<br>\n");
-});
+        socket.on('login-success', function(data) {
+        $('#login-form').hide();
+        $('#game').show();
+        });
 
-socket.on('location', function(data) {
-    $('#area').html(data.area.name + '<br>\n' + data.area.description);
-});
+        socket.on('clientcrap', function(data) {
+        $('#clientcrap').html($('#clientcrap').html() + data['lines'].join('<br>\n') + "<br>\n");
+        });
 
-$(document).on('ready', function() {
-    $('#game').hide();
+        socket.on('location', function(data) {
+        $('#area').html(data.area.name + '<br>\n' + data.area.description);
+        });
 
-    $('#login-form').on('submit', function() {
-        console.log('hey');
-        var data = {
-            username: $('[name="username"]').val()
-        };
-        socket.emit('login', data);
-        return false;
-    });
-
-    $('#game').on('submit', function() {
-        var cmd_input = $('#command');
-        var cmd_text = cmd_input.val();
-        if (cmd_text.length > 0) {
-            var parts = cmd_text.split(' ');
-            var command = parts.shift();
-            socket.emit('cmd', {command: command, args: parts});
-            cmd_input.val('');
+        socket.on('inventory', function(data) {
+        var inv = $('#inventory');
+        inv.empty();
+        for(var i=0; i<data.inventory.length; i++) {
+            var item = data.inventory[i];
+            inv.append($('<p><a href="#">' + item.name + '</a></p>'));
         }
-        return false;
-    })
-});
+        });
 
+        socket.on('location_inventory', function(data) {
+        var inv = $('#area-inventory');
+        inv.empty();
+        for(var i=0; i<data.inventory.length; i++) {
+            var item = data.inventory[i];
+            inv.append($('<p>' + item.name + ' <a href="#" data-item-id="' + item.id + '" class="take">take</a></p>'));
+        }
+        });
 
+        $(document).on('ready', function() {
+            $('#game').hide();
 
-</script>
-<style type="text/css">
-    @font-face {
-        font-family: vga;
-        src: url('../fonts/vga.ttf') format('truetype');
-    }
-    body {
-        font-family: vga;
-        background-color: #000;
-        color: #CCC;
-    }
-    div.cell {
-        width: 350px;
-        height: 200px;
-        display: inline-block;
-        border: 2px solid #CCC;
-        margin: 2px;
-        padding: 4px;
-        overflow-y: scroll;
-    }
-</style>
-<body>
-<form id="login-form">
-<input name="username"><button id="login">Login</button>
-</form>
+            $('#login-form').on('submit', function() {
+                console.log('hey');
+                var data = {
+                    username: $('[name="username"]').val()
+                };
+                socket.emit('login', data);
+                return false;
+            });
 
-<form id="game">
-<div class="cell" name="clientcrap" id="clientcrap"></div>
-<div class="cell" name="area" id="area"></div>
-<input name="command" id="command"><button id="send-command">Send</button>
-</form>
+            $('#game').on('submit', function() {
+                var cmd_input = $('#command');
+                var cmd_text = cmd_input.val();
+                if (cmd_text.length > 0) {
+                    var parts = cmd_text.split(' ');
+                    var command = parts.shift();
+                    socket.emit('cmd', {command: command, args: parts});
+                    cmd_input.val('');
+                }
+                return false;
+            })
 
+            $('.take').on('click', function() {
+                socket.emit('cmd', {command: 'take', args: [$(this).data('itemId')]});
+                return false;
+            });
+        });
+    </script>
+    <link type="text/css" href="/css/style.css" rel="stylesheet">
+</head>
+
+<body ng-app="lvlss">
+    <div class="content">
+        <div ui-view></div>
+    </div>
 </body>
+</html>
