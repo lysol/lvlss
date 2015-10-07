@@ -62,10 +62,13 @@ class LvlssMiddleware(object):
         # logging.debug("Doing LvlssMiddleware tick(). Checking for events")
         for room in self.rooms:
             # logging.debug("Checking %s", room)
-            event = self.controller.get_event(room)
-            if event is not None:
+            while True:
+                event = self.controller.get_event(room)
+                if event is None:
+                    break                     
                 logging.debug("Emitting event %s to %s", event.name, room)
                 socketio.emit(event.name, event.to_dict(), room=room, namespace='/lvlss')
+
         # logging.debug("Doing Controller.tick() now")
         self.controller.tick()
 

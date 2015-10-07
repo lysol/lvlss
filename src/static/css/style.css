@@ -5,11 +5,11 @@
 body {
     font-family: vga;
     background-color: #000;
-    color: #CCC;
+    color: #CFCFCF;
 }
 
 .one-half {
-    width: 48vw;
+    width: 45vw;
 }
 
 .one-quarter {
@@ -20,4 +20,5 @@ body {
     margin: 0 1vw 1vw 0;
     height: 33vh;
     display: inline-block;
+    border: 1px solid #222;
 }

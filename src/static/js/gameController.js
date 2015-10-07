@@ -7,6 +7,10 @@ var gameController = function($scope, socket, $location) {
     this.clientcrap = [];
     this.socket = socket;
 
+    $scope.$on('clientcrap', function(evt, data) {
+        self.clientcrap.concat(data.lines);
+    });
+
     $scope.$on('location', function(evt, data) {
         self.location = data.area;
     });
@@ -22,6 +26,8 @@ var gameController = function($scope, socket, $location) {
     $scope.$on('inventory', function(evt, data) {
         self.inventory = data.inventory;
     });
+
+
 
 };
 
