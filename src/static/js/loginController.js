@@ -1,28 +1,31 @@
-App.controller('lvlss.loginController', ['$scope', 'socket', '$location', function($scope, socket, $location) {
+var loginController = function($scope, socket, $location) {
+    var self = this;
+    this.username = '';
+    this.signingIn = false;
+    this.signinError = '';
+    this.socket = socket;
 
-    $scope.username = '';
-    $scope.signingIn = false;
-    $scope.signinError = '';
-
-    $scope.signIn = function() {
-        if (!$scope.signingIn) {
-            // $scope.signingIn = true;
-
-            if ($scope.username.length > 0) {
-                socket.emit('login', { username: $scope.username });
-            }
-        }
-    }
-
-    socket.on('login-success', function(evt, data) {
-        $scope.signingIn = false;
-        $scope.signinError = '';
+    $scope.$on('login-success', function(evt, data) {
+        self.signingIn = false;
+        self.signinError = '';
         $location.path('/game');
     });
 
-    socket.on('login-error', function(evt, data) {
-        $scope.signingIn = false;
-        $scope.signinError = data.error;
+    $scope.$on('login-error', function(evt, data) {
+        self.signingIn = false;
+        self.signinError = data.error;
     });
 
-}])
+};
+
+loginController.prototype.signIn = function() {
+    if (!this.signingIn) {
+        // this.signingIn = true;
+
+        if (this.username.length > 0) {
+            this.socket.emit('login', { username: this.username });
+        }
+    }
+};
+
+App.controller('lvlss.loginController', ['$scope', 'socket', '$location', loginController]);

@@ -1,1 +1,31 @@
-hi
+<div ng-controller="lvlss.gameController as game">
+    <h1>lvlss</h1>
+    
+    <section class="game-cell one-half">
+        <div class="log" scroll-glue>
+            <h2>{{ game.location.name }}</h2>
+            <p>{{ game.location.description }}</p>
+        </div>
+    </section>
+    <section class="game-cell one-half">
+        <div class="log" scroll-glue>
+            <ul class="clientcrap" ng-repeat="line in game.clientcrap">
+                <li>{{ line }}</li>
+            </ul>
+        </div>
+    </section>
+    <section class="game-cell one-half">
+        <div class="log" scroll-glue>
+            <ul class="items" ng-repeat="item in game.location_items">
+                <li>{{ item.name }}</li>
+            </ul>
+        </div>
+    </section>
+    <section class="game-cell one-half">
+        <div class="log" scroll-glue>
+            <ul class="items" ng-repeat="item in game.inventory">
+                <li>{{ item.name }}</li>
+            </ul>
+        </div>
+    </section>
+</div>

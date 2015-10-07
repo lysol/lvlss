@@ -34,6 +34,14 @@ var App = angular.module('lvlss', [
             prefix: '',
             ioSocket: myIoSocket
         });
+        socket.forward([
+            'login-success',
+            'login-failure',
+            'location',
+            'location_areas',
+            'location_inventory',
+            'inventory'
+        ]);
 
         return socket;
     })

@@ -7,12 +7,17 @@ body {
     background-color: #000;
     color: #CCC;
 }
-div.cell {
-    width: 350px;
-    height: 200px;
+
+.one-half {
+    width: 48vw;
+}
+
+.one-quarter {
+    width: 24vw;
+}
+
+.game-cell {
+    margin: 0 1vw 1vw 0;
+    height: 33vh;
     display: inline-block;
-    border: 2px solid #CCC;
-    margin: 2px;
-    padding: 4px;
-    overflow-y: scroll;
 }

@@ -1,7 +1,7 @@
-<div ng-controller="lvlss.loginController">
+<div ng-controller="lvlss.loginController as login">
     <h1>Login</h1>
     <form name="loginForm">
-        <div class="error" ng-if="loginError.length > 0">{{ loginError }}</div>
-        <input name="username" ng-model="username"><button ng-click="signIn()">Sign In</button>
+        <div class="error" ng-if="login.loginError.length > 0">{{ login.loginError }}</div>
+        <input name="username" ng-model="login.username"><button ng-click="login.signIn()">Sign In</button>
     </form>
 </div>
