@@ -1,5 +1,6 @@
 var App = angular.module('lvlss', [
-    'ui.router'
+    'ui.router',
+    'btford.socket-io'
 ])
     .run([
         '$rootScope',
@@ -9,6 +10,7 @@ var App = angular.module('lvlss', [
             $rootScope.$state = $state;
             $rootScope.$stateParams = $stateParams;
         }])
+
     .config([
         '$stateProvider', '$urlRouterProvider',
         function($stateProvider, $urlRouterProvider) {
@@ -25,27 +27,13 @@ var App = angular.module('lvlss', [
                     templateUrl: '/partials/game.html'
                 })
         }])
-    .factory('socket', function($rootScope) {
-        var socket = io.connect('/lvlss');
-        return {
-            on: function (eventName, callback) {
-                socket.on(eventName, function () {
-                    var args = arguments;
-                    $rootScope.$apply(function () {
-                        callback.apply(socket, args);
-                    });
-                });
-            },
-            emit: function (eventName, data, callback) {
-                console.log('Emit event ' + eventName);
-                socket.emit(eventName, data, function () {
-                    var args = arguments;
-                    $rootScope.$apply(function () {
-                        if (callback) {
-                            callback.apply(socket, args);
-                        }
-                    });
-                });
-            }
-        };
-    });
+
+    .factory('socket', function (socketFactory) {
+        var myIoSocket = io.connect('/lvlss');
+        var socket = socketFactory({
+            prefix: '',
+            ioSocket: myIoSocket
+        });
+
+        return socket;
+    })

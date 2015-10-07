@@ -6,21 +6,21 @@ App.controller('lvlss.loginController', ['$scope', 'socket', '$location', functi
 
     $scope.signIn = function() {
         if (!$scope.signingIn) {
-            $scope.signingIn = true;
+            // $scope.signingIn = true;
 
             if ($scope.username.length > 0) {
-                socket.emit('cmd', {command: 'login', args: [$scope.username]});
+                socket.emit('login', { username: $scope.username });
             }
         }
     }
 
-    socket.on('login-success', function(data) {
+    socket.on('login-success', function(evt, data) {
         $scope.signingIn = false;
         $scope.signinError = '';
         $location.path('/game');
     });
 
-    socket.on('login-error', function(data) {
+    socket.on('login-error', function(evt, data) {
         $scope.signingIn = false;
         $scope.signinError = data.error;
     });
