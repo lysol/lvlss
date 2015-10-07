@@ -1,35 +1,29 @@
 <div ng-controller="lvlss.gameController as game">
-<!--     <h1>lvlss</h1>
-     -->
-    <input ng-model="game.command" type="text"> <button ng-click="game.sendCommand()">Run</button>
-    <section class="game-cell one-half">
-        <div class="log" scroll-glue>
-            <h2>{{ game.location.name }}</h2>
-            <p>{{ game.location.description }}</p>
-            <ul class="items" ng-repeat="area in game.location_areas">
-                <li><a href="#" ng-click="game.travel(area.id)">{{ area.name }}</a></li>
-            </ul>
-        </div>
+
+    <div class="clear">
+        <input ng-model="game.command" type="text" ng-enter="game.sendCommand()">
+        <button ng-click="game.sendCommand()">Run</button>
+    </div>
+    <section class="game-cell one-half" scroll-glue>
+        <h2>{{ game.location.name }}</h2>
+        <p>{{ game.location.description }}</p>
+        <ul class="items" ng-repeat="area in game.location_areas track by $index">
+            <li><a href="#" ng-click="game.travel(area.id)">{{ area.name }}</a></li>
+        </ul>
     </section>
-    <section class="game-cell one-half">
-        <div class="log" scroll-glue>
-            <ul class="clientcrap" ng-repeat="line in game.clientcrap">
-                <li>{{ line }}</li>
-            </ul>
-        </div>
+    <section class="game-cell one-half" scroll-glue>
+        <ul class="clientcrap" ng-repeat="line in game.clientcrap track by $index">
+            <li>{{ line }}</li>
+        </ul>
     </section>
-    <section class="game-cell one-half">
-        <div class="log" scroll-glue>
-            <ul class="items" ng-repeat="item in game.location_items">
-                <li>{{ item.name }}</li>
-            </ul>
-        </div>
+    <section class="game-cell one-half" scroll-glue>
+        <ul class="items" ng-repeat="item in game.location_items track by $index">
+            <li>{{ item.name }} <a href="#" ng-click="game.takeItem(item.id)">take</a></li>
+        </ul>
     </section>
-    <section class="game-cell one-half">
-        <div class="log" scroll-glue>
-            <ul class="items" ng-repeat="item in game.inventory">
-                <li>{{ item.name }}</li>
-            </ul>
-        </div>
+    <section class="game-cell one-half" scroll-glue>
+        <ul class="items" ng-repeat="item in game.inventory track by $index">
+            <li>{{ item.name }} <a href="#" ng-click="game.dropItem(item.id)">drop</a></li>
+        </ul>
     </section>
 </div>

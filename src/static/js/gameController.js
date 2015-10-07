@@ -16,7 +16,7 @@ var gameController = function($scope, socket, $location) {
         self.location = data.area;
     });
 
-    $scope.$on('location_items', function(evt, data) {
+    $scope.$on('location_inventory', function(evt, data) {
         self.location_items = data.inventory;
     });
 
@@ -42,6 +42,14 @@ gameController.prototype.sendCommand = function() {
         this.socket.emit('cmd', {command: parts.shift(), args: parts});
         this.command = '';
     }
+};
+
+gameController.prototype.takeItem = function(itemId) {
+    this.socket.emit('cmd', {command: 'take', args: [itemId]});
+};
+
+gameController.prototype.dropItem = function(itemId) {
+    this.socket.emit('cmd', {command: 'drop', args: [itemId]});
 };
 
 App.controller('lvlss.gameController', ['$scope', 'socket', '$location', gameController]);

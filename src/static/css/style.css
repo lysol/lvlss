@@ -3,9 +3,17 @@
     src: url('../fonts/vga.ttf') format('truetype');
 }
 body {
-    /*font-family: vga;*/
-    /*background-color: #000;*/
-    /*color: #CFCFCF;*/
+    font-family: vga;
+    background-color: #000;
+    color: #CFCFCF;
+}
+
+a, a:visited, a:active {
+    color: #FFF;
+}
+
+a:hover {
+    color: #F00;
 }
 
 .one-half {
@@ -18,7 +26,22 @@ body {
 
 .game-cell {
     margin: 0 1vw 1vw 0;
-    height: 43vh;
-    display: inline-block;
-    /*border: 1px solid #222;*/
+    height: 33vh;
+    display: block;
+    float: left;
+    border: 1px solid #222;
+    overflow-y: scroll;
 }
+
+.clear {
+    clear: both;
+}
+
+ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+    ul li {
+        padding: 0;
+    }

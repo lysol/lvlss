@@ -1,6 +1,7 @@
 var App = angular.module('lvlss', [
     'ui.router',
-    'btford.socket-io'
+    'btford.socket-io',
+    'luegg.directives'
 ])
     .run([
         '$rootScope',
@@ -46,3 +47,17 @@ var App = angular.module('lvlss', [
 
         return socket;
     })
+
+    .directive('ngEnter', function () {
+        return function (scope, element, attrs) {
+            element.bind("keydown keypress", function (event) {
+                if(event.which === 13) {
+                    scope.$apply(function (){
+                        scope.$eval(attrs.ngEnter);
+                    });
+
+                    event.preventDefault();
+                }
+            });
+        };
+    });
