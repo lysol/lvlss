@@ -1,4 +1,4 @@
-from flask import Flask, request, send_from_directory, session
+from flask import Flask, request, send_from_directory, session, make_response
 from flask.ext.login import current_user, login_user, logout_user, LoginManager
 from flask.ext.socketio import SocketIO, emit, send, join_room, leave_room
 from event import Event
@@ -10,6 +10,7 @@ import logging
 import functools
 import gevent
 import time
+from datetime import datetime
 from uuid import uuid4
 
 
@@ -65,7 +66,7 @@ class LvlssMiddleware(object):
             while True:
                 event = self.controller.get_event(room)
                 if event is None:
-                    break                     
+                    break
                 logging.debug("Emitting event %s to %s", event.name, room)
                 socketio.emit(event.name, event.to_dict(), room=room, namespace='/lvlss')
 
@@ -102,8 +103,10 @@ def run_regularly(function, delay=0.25):
         function()
         gevent.sleep(delay)
 
+
 def fire_ticker(func):
-    gevent.spawn(run_regularly, func);
+    gevent.spawn(run_regularly, func)
+
 
 def authenticated_only(f):
     @functools.wraps(f)
@@ -113,6 +116,21 @@ def authenticated_only(f):
         else:
             return f(*args, **kwargs)
     return wrapped
+
+
+def nocache(f):
+    @functools.wraps(f)
+    def no_cache(*args, **kwargs):
+        response = make_response(f(*args, **kwargs))
+        response.headers['Last-Modified'] = datetime.now()
+        response.headers['Cache-Control'] = \
+            'no-store, no-cache, must-revalidate, ' + \
+            'post-check=0, pre-check=0, max-age=0'
+        response.headers['Pragma'] = 'no-cache'
+        response.headers['Expires'] = '-1'
+        return response
+
+    return functools.update_wrapper(no_cache, f)
 
 # set that shit _up_
 logging.basicConfig(level=logging.DEBUG)
@@ -187,6 +205,7 @@ def cmd(data):
 
 
 @app.route("/<path:path>")
+@nocache
 def catchall(path):
     return send_from_directory(app.static_folder, path)
 

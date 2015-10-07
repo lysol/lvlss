@@ -40,7 +40,8 @@ var App = angular.module('lvlss', [
             'location',
             'location_areas',
             'location_inventory',
-            'inventory'
+            'inventory',
+            'clientcrap'
         ]);
 
         return socket;

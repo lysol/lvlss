@@ -6,9 +6,10 @@ var gameController = function($scope, socket, $location) {
     this.location_items = [];
     this.clientcrap = [];
     this.socket = socket;
+    this.command = '';
 
     $scope.$on('clientcrap', function(evt, data) {
-        self.clientcrap.concat(data.lines);
+        self.clientcrap = self.clientcrap.concat(data.lines);
     });
 
     $scope.$on('location', function(evt, data) {
@@ -33,6 +34,14 @@ var gameController = function($scope, socket, $location) {
 
 gameController.prototype.travel = function(areaId) {
     this.socket.emit('cmd', {command: 'go', args: [areaId]});
+};
+
+gameController.prototype.sendCommand = function() {
+    if (this.command.length > 0) {
+        var parts = this.command.split(' ')
+        this.socket.emit('cmd', {command: parts.shift(), args: parts});
+        this.command = '';
+    }
 };
 
 App.controller('lvlss.gameController', ['$scope', 'socket', '$location', gameController]);
