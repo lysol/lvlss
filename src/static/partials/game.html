@@ -5,6 +5,9 @@
         <div class="log" scroll-glue>
             <h2>{{ game.location.name }}</h2>
             <p>{{ game.location.description }}</p>
+            <ul class="items" ng-repeat="area in game.location_areas">
+                <li><a href="#" ng-click="game.travel(area.id)">{{ area.name }}</a></li>
+            </ul>
         </div>
     </section>
     <section class="game-cell one-half">
