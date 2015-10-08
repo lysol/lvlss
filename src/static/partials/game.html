@@ -1,5 +1,4 @@
-<div ng-controller="lvlss.gameController as game">
-
+<div id="game" ng-controller="lvlss.gameController as game">
     <div class="clear">
         <input ng-model="game.command" type="text" ng-enter="game.sendCommand()">
         <button ng-click="game.sendCommand()">Run</button>
@@ -8,7 +7,7 @@
         <h2>{{ game.location.name }}</h2>
         <p>{{ game.location.description }}</p>
         <ul class="items" ng-repeat="area in game.location_areas track by $index">
-            <li><a href="#" ng-click="game.travel(area.id)">{{ area.name }}</a></li>
+            <li>Travel to <a href="#" ng-click="game.travel(area.id)">{{ area.name }}</a></li>
         </ul>
     </section>
     <section class="game-cell one-half" scroll-glue>
@@ -23,7 +22,16 @@
     </section>
     <section class="game-cell one-half" scroll-glue>
         <ul class="items" ng-repeat="item in game.inventory track by $index">
-            <li>{{ item.name }} <a href="#" ng-click="game.dropItem(item.id)">drop</a></li>
+            <li>{{ item.name }} <a href="#" ng-click="game.dropItem(item.id)">drop</a> <a href="#" ng-click="game.editScript(item.id)">script</a></li>
         </ul>
     </section>
+
+</div>
+
+<div id="script-editor" class="hidden" ng-controller="lvlss.scriptEditorController as editor">
+    <p><a href="#" ng-click="editor.close()">Close</a></p>
+    <p>
+        <textarea name="script_body" ng-model="editor.scriptBody"></textarea>
+        <button ng-click="editor.save()">Save</button> <button ng-click="editor.load()">Reset</button>
+    </p>
 </div>

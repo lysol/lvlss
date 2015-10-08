@@ -1,4 +1,4 @@
-var gameController = function($scope, socket, $location) {
+var gameController = function($scope, socket, $location, manos) {
     var self = this;
     this.inventory = [];
     this.location = {};
@@ -7,6 +7,8 @@ var gameController = function($scope, socket, $location) {
     this.clientcrap = [];
     this.socket = socket;
     this.command = '';
+    this.$scope = $scope;
+    this.manos = manos;
 
     $scope.$on('clientcrap', function(evt, data) {
         self.clientcrap = self.clientcrap.concat(data.lines);
@@ -28,7 +30,9 @@ var gameController = function($scope, socket, $location) {
         self.inventory = data.inventory;
     });
 
-
+    manos.on('close-editor', $scope, function(evt, data) {
+        self.closeScriptEditor();
+    });
 
 };
 
@@ -52,4 +56,19 @@ gameController.prototype.dropItem = function(itemId) {
     this.socket.emit('cmd', {command: 'drop', args: [itemId]});
 };
 
-App.controller('lvlss.gameController', ['$scope', 'socket', '$location', gameController]);
+gameController.prototype.editScript = function(itemId) {
+    this.openScriptEditor();
+    this.manos.emit('edit-script', [itemId]);
+};
+
+gameController.prototype.openScriptEditor = function() {
+    angular.element(document.querySelector('#script-editor')).removeClass('hidden');
+    angular.element(document.querySelector('#game')).addClass('hidden');
+};
+
+gameController.prototype.closeScriptEditor = function() {
+    angular.element(document.querySelector('#script-editor')).addClass('hidden');
+    angular.element(document.querySelector('#game')).removeClass('hidden');
+}
+
+App.controller('lvlss.gameController', ['$scope', 'socket', '$location', 'manos', gameController]);

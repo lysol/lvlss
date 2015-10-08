@@ -42,7 +42,8 @@ var App = angular.module('lvlss', [
             'location_areas',
             'location_inventory',
             'inventory',
-            'clientcrap'
+            'clientcrap',
+            'script_body'
         ]);
 
         return socket;
@@ -60,4 +61,16 @@ var App = angular.module('lvlss', [
                 }
             });
         };
-    });
+    })
+
+    .factory('manos', ['$rootScope', function($rootScope) {
+        var manos = {};
+        manos.emit = function(msg) {
+        $rootScope.$emit(msg);
+        };
+        manos.on = function(msg, scope, func) {
+            var unbind = $rootScope.$on(msg, func);
+            scope.$on('$destroy', unbind);
+        };
+        return manos;
+    }])
