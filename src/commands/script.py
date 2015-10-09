@@ -24,8 +24,13 @@ class SetScript(Command):
         thing.set_script(script_body)
         try:
             self.world.initialize_script(thing, player)
+            return Event('script_saved', {
+                "thing": thing.to_dict()
+                })
         except saulscript.exceptions.SaulException as saulerror:
-            self.tell_player(player, saulerror.message)
+            return Event('script_error', {
+                "error": saulerror.message
+                })
 
 
 class GetScript(Command):

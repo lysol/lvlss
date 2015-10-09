@@ -31,7 +31,8 @@
 <div id="script-editor" class="hidden" ng-controller="lvlss.scriptEditorController as editor">
     <p><a href="#" ng-click="editor.close()">Close</a></p>
     <p>
-        <textarea name="script_body" ng-model="editor.scriptBody"></textarea>
+        <textarea class="script-editor" name="script_body" ng-model="editor.scriptBody"></textarea>
         <button ng-click="editor.save()">Save</button> <button ng-click="editor.load()">Reset</button>
+        <div>{{ editor.scriptMessage }}</div>
     </p>
 </div>

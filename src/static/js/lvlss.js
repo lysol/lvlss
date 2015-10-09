@@ -43,7 +43,9 @@ var App = angular.module('lvlss', [
             'location_inventory',
             'inventory',
             'clientcrap',
-            'script_body'
+            'script_body',
+            'script_saved',
+            'script_error'
         ]);
 
         return socket;
@@ -63,10 +65,11 @@ var App = angular.module('lvlss', [
         };
     })
 
+    // * * * THE HANDS OF FATE * * *
     .factory('manos', ['$rootScope', function($rootScope) {
         var manos = {};
-        manos.emit = function(msg) {
-        $rootScope.$emit(msg);
+        manos.emit = function(msg, data) {
+        $rootScope.$emit(msg, data);
         };
         manos.on = function(msg, scope, func) {
             var unbind = $rootScope.$on(msg, func);
