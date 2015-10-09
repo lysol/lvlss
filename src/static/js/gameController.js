@@ -58,7 +58,7 @@ gameController.prototype.dropItem = function(itemId) {
 
 gameController.prototype.editScript = function(itemId) {
     this.openScriptEditor();
-    this.manos.emit('edit-script', [itemId]);
+    this.manos.emit('edit-script', {itemId: itemId});
 };
 
 gameController.prototype.openScriptEditor = function() {
