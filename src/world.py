@@ -235,7 +235,7 @@ class World(object):
                     logging.error("Encountered scripting error: %s", e)
                     obj = self.find_object(obj_id)
                     printed_exception = "Scripting error on object %s at line %d: %s" % \
-                        (obj.name, e.line_num, repr(e))
+                        (obj.name, e.line_num, e.msg)
                     self.tell_owner(obj_id, printed_exception)
 
     def initialize_script(self, thing, initiator):

@@ -29,7 +29,7 @@ class SetScript(Command):
                 })
         except saulscript.exceptions.SaulException as saulerror:
             return Event('script_error', {
-                "error": saulerror.message
+                "error": "Error at line %d: %s" % (saulerror.line_num, saulerror.message)
                 })
 
 
