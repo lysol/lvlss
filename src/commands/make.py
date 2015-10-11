@@ -25,3 +25,6 @@ class Make(Command):
         player.location.lobjects[item.id] = item
         item.set_parent(player.location)
         self.tell_player(player, "You made: %s" % item.name)
+        self.send_player_location(player)
+        self.send_player_location_areas(player)
+        self.send_player_location_inventory(player)

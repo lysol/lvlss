@@ -30,6 +30,17 @@ body {
     font-size: 16px;
 }
 
+#game {
+    position: relative;
+}
+    #game h1.title {
+        font-style: italic;
+        position: absolute;
+        right: 4vw;
+        top: -4vh;
+        font-size: 200%;
+    }
+
 h1, h2, h3, h4, h5, h6 {
     font-size: 16px;
 }
