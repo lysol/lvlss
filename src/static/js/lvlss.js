@@ -1,7 +1,8 @@
 var App = angular.module('lvlss', [
     'ui.router',
     'btford.socket-io',
-    'luegg.directives'
+    'luegg.directives',
+    'ngAnimate'
 ])
     .run([
         '$rootScope',
