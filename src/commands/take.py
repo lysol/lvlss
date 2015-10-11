@@ -15,6 +15,7 @@ class Take(Command):
         if item_id in player.location.lobjects:
             item = player.location.lobjects[item_id]
             player.inventory[item.id] = item
+            item.set_parent(player)
             self.tell_player(player, "You took: %s" % item.name)
             del(player.location.lobjects[item_id])
             self.send_player_location_inventory(player)

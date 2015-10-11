@@ -23,4 +23,5 @@ class Make(Command):
 
         item = LObject(arglist[0], description=arglist[1], value=arglist[2])
         player.location.lobjects[item.id] = item
+        item.set_parent(player.location)
         self.tell_player(player, "You made: %s" % item.name)

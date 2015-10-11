@@ -16,6 +16,7 @@ class Drop(Command):
             item = player.inventory[item_id]
             player.location.lobjects[item.id] = item
             del player.inventory[item_id]
+            item.set_parent(player.location)
             self.tell_player(player, "You dropped: %s" % item.name)
             self.send_player_location_inventory(player)
             self.send_player_inventory(player)

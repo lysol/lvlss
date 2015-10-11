@@ -27,7 +27,10 @@ class LObject:
         if self.power > self.max_power:
             self.power = self.max_power
 
-    def __init__(self, name, description=None, value=0, max_power=1000, recharge_rate=50):
+    def set_parent(self, parent):
+        self.parent = parent
+
+    def __init__(self, name, description=None, value=0, max_power=1000, recharge_rate=50, parent=None):
         self.name = name
         self.value = value
         self.description = description
@@ -37,3 +40,4 @@ class LObject:
         self.max_power = max_power
         self.recharge_rate = recharge_rate
         self.power = max_power
+        self.parent = parent

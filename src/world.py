@@ -41,7 +41,9 @@ class World(object):
     def init_lobjects(self):
         # this will be an initialization routine for the first objects
         brick = LObject('brick', value=20)
-        self.areas[self.areas.keys()[0]].lobjects[brick.id] = brick
+        area = self.areas[self.areas.keys()[0]]
+        area.lobjects[brick.id] = brick
+        brick.set_parent(area)
 
     def init_areas(self):
         quarry = Area('Quarry', 'You are in an empty quarry.')
@@ -179,9 +181,36 @@ class World(object):
             self.register_event_handler(thing.id, name, callback)
         context['on'] = _on
 
-        def tell(arg):
+        def _owner():
+            if hasattr(thing, 'parent'):
+                return thing.parent.to_dict()
+            else:
+                return None
+        context['owner'] = _owner
+
+        def _nearby_players():
+            owner = _owner()
+            if isinstance(owner, Player):
+                return owner.location.players
+            elif isinstance(owner, Area):
+                return owner.players
+            else:
+                return []
+        context['nearby_players'] = _nearby_players
+
+        def _nearby_items():
+            owner = _owner()
+            if isinstance(owner, Player):
+                return owner.location.lobjects
+            elif isinstance(owner, Area):
+                return owner.lobjects
+            else:
+                return []
+        context['nearby_items'] = _nearby_items
+
+        def _tell(arg):
             self.tell(initiator, str(arg))
-        context['tell'] = tell
+        context['tell'] = _tell
 
         return context
 
@@ -235,7 +264,7 @@ class World(object):
                     logging.error("Encountered scripting error: %s", e)
                     obj = self.find_object(obj_id)
                     printed_exception = "Scripting error on object %s at line %d: %s" % \
-                        (obj.name, e.line_num, e.msg)
+                        (obj.name, e.line_num, e.message)
                     self.tell_owner(obj_id, printed_exception)
 
     def initialize_script(self, thing, initiator):
@@ -274,7 +303,13 @@ class World(object):
             for p in self.players:
                 logging.debug('setting world for %s' % p)
                 self.players[p].set_world(self)
+                for lobject in self.players[p].inventory:
+                    lobject.set_parent(self.players[p])
+
             self.areas = self.datastore['areas']
+            for area in self.areas:
+                for lobject in area.lobjects:
+                    lobject.set_parent(area)
         else:
             self.players = {}
             self.areas = {}

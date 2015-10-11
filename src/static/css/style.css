@@ -6,6 +6,13 @@ body {
     font-family: vga;
     background-color: #000;
     color: #CFCFCF;
+    background-image: url('../images/loveless.jpg');
+    background-size: cover;
+    font-size: 16px;
+}
+
+h1, h2, h3, h4, h5, h6 {
+    font-size: 16px;
 }
 
 a, a:visited, a:active {
@@ -25,13 +32,18 @@ a:hover {
 }
 
 .game-cell {
-    margin: 0 1vw 1vw 0;
-    height: 33vh;
+    margin: 0 1vw 3vh 0;
+    height: 37.5vh;
     display: block;
     float: left;
-    border: 1px solid #222;
+    background-color: rgba(0, 0, 0, 0.7);
     overflow-y: scroll;
+    padding: 1vh 1vw;
 }
+
+    .game-cell.full-height {
+        height: 80vh;
+    }
 
 .clear {
     clear: both;
@@ -53,4 +65,21 @@ ul {
 .script-editor {
     width: 80vw;
     height: 80vh;
+}
+
+.command-holder {
+    margin: 1vh 1vw 1vh 0;
+}
+
+input, button {
+    background-color: rgba(0, 0, 0, 0.7);
+    color: #FFF;
+    font-size: 16px;
+    font-family: vga;
+    border: 2px solid rgba(0, 0, 0, 0.7);
+    padding: 1vh 1vw;
+}
+
+button {
+    border: 2px solid #888;
 }
