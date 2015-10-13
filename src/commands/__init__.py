@@ -9,6 +9,9 @@ from inventory import Inventory
 from drop import Drop
 from make import Make
 from landfill import Landfill
+from item_info import ItemInfo
 from script import SetScript, GetScript
 
-all_commands = (Quit, SetName, Who, Say, Look, Go, Take, Inventory, Drop, Make, Landfill, SetScript, GetScript)
+all_commands = (Quit, SetName, Who, Say, Look, 
+    Go, Take, Inventory, Drop, Make, Landfill, 
+    SetScript, GetScript, ItemInfo)

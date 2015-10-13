@@ -147,6 +147,7 @@ def handle_response(response):
         logging.debug("Handling None")
         return
     try:
+        logging.debug("Handling response")
         rdict = response.to_dict()
         emit(response.name, rdict, namespace='/lvlss')
     except IndexError:

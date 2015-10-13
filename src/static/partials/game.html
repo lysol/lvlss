@@ -13,7 +13,7 @@
         </ul>
         <h3 ng-if="game.location_items.length > 0">Items here:</h3>
         <ul class="items" ng-repeat="item in game.location_items track by $index">
-            <li>{{ item.name }} <a href="#" ng-click="game.takeItem(item.id)">take</a></li>
+            <li>{{ item.name }} <a href="#" ng-click="game.takeItem(item.id)">take</a> <a href="#" ng-click="game.openProperties(item.id)">look</a></li>
         </ul>
     </section>
     <section class="game-cell one-half" scroll-glue>
@@ -25,7 +25,7 @@
     <section class="game-cell one-half" scroll-glue>
         <h3 ng-if="game.inventory.length > 0">Inventory:</h3>
         <ul class="items" ng-repeat="item in game.inventory track by $index">
-            <li>{{ item.name }} <a href="#" ng-click="game.dropItem(item.id)">drop</a> <a href="#" ng-click="game.editScript(item.id)">script</a></li>
+            <li>{{ item.name }} <a href="#" ng-click="game.dropItem(item.id)">drop</a> <a href="#" ng-click="game.editScript(item.id)">script</a> <a href="#" ng-click="game.openProperties(item.id)">look</a></li>
         </ul>
     </section>
 
@@ -36,5 +36,15 @@
     <div><span ng-if="editor.scriptMessage.length > 0">{{ editor.scriptMessage }}</span></div>
     <p>
         <textarea class="script-editor" name="script_body" ng-model="editor.scriptBody"></textarea>        
+    </p>
+</div>
+
+<div id="properties" class="hidden" ng-controller="lvlss.propertiesController as properties">
+    <h2>Properties for {{ properties.name }}</h2>
+    <p>
+        ID: {{ properties.id }}
+    </p>
+    <p>
+        <button ng-click="properties.close()">Close</button>
     </p>
 </div>

@@ -31,8 +31,17 @@ var gameController = function($scope, socket, $location, manos) {
         self.inventory = data.inventory;
     });
 
+    $scope.$on('item-info', function(evt, data) {
+        angular.element(document.querySelector('#properties')).removeClass('hidden');
+        angular.element(document.querySelector('#game')).addClass('hidden');
+    });
+
     manos.on('close-editor', $scope, function(evt, data) {
         self.closeScriptEditor();
+    });
+
+    manos.on('close-properties', $scope, function(evt, data) {
+        self.closeProperties();
     });
 
 };
@@ -128,5 +137,15 @@ gameController.prototype.closeScriptEditor = function() {
     angular.element(document.querySelector('#script-editor')).addClass('hidden');
     angular.element(document.querySelector('#game')).removeClass('hidden');
 }
+
+gameController.prototype.openProperties = function(itemId) {
+    this.socket.emit('cmd', {command: 'item_info', args: [itemId]});
+};
+
+gameController.prototype.closeProperties = function() {
+    angular.element(document.querySelector('#properties')).addClass('hidden');
+    angular.element(document.querySelector('#game')).removeClass('hidden');
+}
+
 
 App.controller('lvlss.gameController', ['$scope', 'socket', '$location', 'manos', gameController]);

@@ -46,7 +46,8 @@ var App = angular.module('lvlss', [
             'clientcrap',
             'script_body',
             'script_saved',
-            'script_error'
+            'script_error',
+            'item-info'
         ]);
 
         return socket;

@@ -303,12 +303,12 @@ class World(object):
             for p in self.players:
                 logging.debug('setting world for %s' % p)
                 self.players[p].set_world(self)
-                for lobject in self.players[p].inventory:
+                for index, lobject in self.players[p].inventory.iteritems():
                     lobject.set_parent(self.players[p])
 
             self.areas = self.datastore['areas']
-            for area in self.areas:
-                for lobject in area.lobjects:
+            for area_index, area in self.areas.iteritems():
+                for lname, lobject in area.lobjects.iteritems():
                     lobject.set_parent(area)
         else:
             self.players = {}
