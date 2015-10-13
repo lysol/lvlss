@@ -15,4 +15,5 @@ class SetName(Command):
         self.send_player_location(player)
         self.send_player_location_areas(player)
         self.send_player_location_inventory(player)
+        self.send_player_inventory(player)
         return Event('name_set', {"player_name": args[0]})
