@@ -22,7 +22,8 @@ class CommandException(Exception):
         5: "That item is not in your inventory.",
         6: "The argument at position %d must be a number.",
         7: "No such file.",
-        8: "Unknown item."
+        8: "Unknown item.",
+        9: "Not enough credits (%d needed)."
     }
 
     def __init__(self, value, interp=None):
@@ -78,6 +79,9 @@ class Command(object):
 
     def send_player_location_inventory(self, player):
         return self.world.send_player_location_inventory(player)
+
+    def send_player_status(self, player):
+        return self.world.send_player_status(player)
 
     def __init__(self, world):
         self.world = world

@@ -125,3 +125,7 @@ button {
         background-color: #F0F;
         border-color: #F0F;
     }
+
+.player-name {
+    color: #FFF;
+}

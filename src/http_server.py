@@ -172,7 +172,7 @@ def login(data):
     cmd_data = {"command": 'nick', "args": [data['username']]}
     response_event = cmd_handler.handle_event(None, cmd_data)
     logging.debug(response_event)
-    if response_event is not None and response_event.name == 'name_set':
+    if response_event is not None and response_event.name == 'name-set':
         handle_response(response_event)
         emit('login-success', {"username": data['username']}, namespace='/lvlss')
         cmd_handler.register_user_session(session['id'], data['username'])

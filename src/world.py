@@ -154,7 +154,7 @@ class World(object):
             player = self.players[player]
         areas = [area.to_dict() for area in player.location.links_to.values()]
         self.controller.store_event(player.name,
-                                    Event('location_areas', {
+                                    Event('location-areas', {
                                         'areas': areas
                                     }))
 
@@ -169,8 +169,15 @@ class World(object):
         if type(player) != Player:
             player = self.players[player]
         items = [item.to_dict() for item in player.location.lobjects.values()]
-        self.controller.store_event(player.name, Event('location_inventory',
+        self.controller.store_event(player.name, Event('location-inventory',
                                                        {'inventory': items}))
+
+    def send_player_status(self, player):
+        if type(player) != Player:
+            player = self.players[player]
+        player_data = player.to_dict()
+        self.controller.store_event(player.name, Event('player-status',
+                                                       {'player': player_data}))
 
     def initialize_context(self, thing, initiator, context):
         context['initiator'] = initiator.to_dict()

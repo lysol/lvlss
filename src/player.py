@@ -8,7 +8,8 @@ class Player(object):
             "id": self.id,
             "name": self.name,
             "inventory": self.inventory,
-            "signed_in": False
+            "signed_in": False,
+            "credits": self.credits
         }
 
     def send_messages(self, msg):
@@ -26,6 +27,9 @@ class Player(object):
         self.world = world
         self.signed_in = False
         self.id = uuid4()
+        self.credits = 5
 
     def to_dict(self):
-        return self.__getstate__()
+        state = self.__getstate__()
+        del(state['inventory'])  # don't need it
+        return state

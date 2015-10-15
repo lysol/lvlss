@@ -40,14 +40,15 @@ var App = angular.module('lvlss', [
             'login-success',
             'login-failure',
             'location',
-            'location_areas',
-            'location_inventory',
+            'location-areas',
+            'location-inventory',
             'inventory',
             'clientcrap',
-            'script_body',
-            'script_saved',
-            'script_error',
-            'item-info'
+            'script-body',
+            'script-saved',
+            'script-error',
+            'item-info',
+            'player-status'
         ]);
 
         return socket;

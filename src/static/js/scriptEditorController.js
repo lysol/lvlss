@@ -12,15 +12,15 @@ var scriptEditorController = function($scope, socket, $location, manos) {
         self.load();
     })
 
-    $scope.$on('script_body', function(evt, data) {
+    $scope.$on('script-body', function(evt, data) {
         self.scriptBody = data.script_body;
     });
 
-    $scope.$on('script_error', function(evt, data) {
+    $scope.$on('script-error', function(evt, data) {
         self.scriptMessage = data.error;
     });
 
-    $scope.$on('script_saved', function(evt, data) {
+    $scope.$on('script-saved', function(evt, data) {
         self.scriptMessage = 'Script saved.';
         setTimeout(function() {
             self.scriptMessage = '';

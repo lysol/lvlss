@@ -21,10 +21,14 @@ class Make(Command):
         except ValueError:
             raise CommandException(CommandException.NOT_A_NUMBER, 3)
 
+        if player.credits < 1:
+            raise CommandException(CommandException.NOT_ENOUGH_CREDITS, 1)
         item = LObject(arglist[0], description=arglist[1], value=arglist[2])
         player.location.lobjects[item.id] = item
+        player.credits -= 1
         item.set_parent(player.location)
         self.tell_player(player, "You made: %s" % item.name)
         self.send_player_location(player)
         self.send_player_location_areas(player)
         self.send_player_location_inventory(player)
+        self.send_player_status(player)

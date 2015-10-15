@@ -10,6 +10,7 @@ var gameController = function($scope, socket, $location, manos) {
     this.$scope = $scope;
     this.manos = manos;
     this.command_error = '';
+    this.player = {name: '', credits: 0}
 
     $scope.$on('clientcrap', function(evt, data) {
         self.addCrap(data.lines);
@@ -19,11 +20,11 @@ var gameController = function($scope, socket, $location, manos) {
         self.location = data.area;
     });
 
-    $scope.$on('location_inventory', function(evt, data) {
+    $scope.$on('location-inventory', function(evt, data) {
         self.location_items = data.inventory;
     });
 
-    $scope.$on('location_areas', function(evt, data) {
+    $scope.$on('location-areas', function(evt, data) {
         self.location_areas = data.areas;
     });
 
@@ -34,6 +35,11 @@ var gameController = function($scope, socket, $location, manos) {
     $scope.$on('item-info', function(evt, data) {
         angular.element(document.querySelector('#properties')).removeClass('hidden');
         angular.element(document.querySelector('#game')).addClass('hidden');
+    });
+
+    $scope.$on('player-status', function(evt, data) {
+        self.player.name = data.player.name;
+        self.player.credits = data.player.credits;
     });
 
     manos.on('close-editor', $scope, function(evt, data) {

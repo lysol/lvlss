@@ -23,6 +23,10 @@
     </section>
 
     <section class="game-cell one-half" scroll-glue>
+        <p>
+            <span class="player-name">{{ game.player.name }}</span><br>
+            <strong>Credits:</strong> {{ game.player.credits }}
+        </p>
         <h3 ng-if="game.inventory.length > 0">Inventory:</h3>
         <ul class="items" ng-repeat="item in game.inventory track by $index">
             <li>{{ item.name }} <a href="#" ng-click="game.dropItem(item.id)">drop</a> <a href="#" ng-click="game.editScript(item.id)">script</a> <a href="#" ng-click="game.openProperties(item.id)">look</a></li>

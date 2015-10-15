@@ -20,6 +20,7 @@ class Drop(Command):
             self.tell_player(player, "You dropped: %s" % item.name)
             self.send_player_location_inventory(player)
             self.send_player_inventory(player)
+            self.send_player_status(player)
             # Has to be at the end. Definitely cannot be between deleting the 
             # item from the player's inventory and before the addition to the
             # area's inventory, because in this state the object is orphaned

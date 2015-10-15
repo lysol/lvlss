@@ -15,3 +15,4 @@ class Look(Command):
         self.send_player_location(player)
         self.send_player_location_areas(player)
         self.send_player_location_inventory(player)
+        self.send_player_status(player)

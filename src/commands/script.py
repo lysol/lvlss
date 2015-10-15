@@ -24,11 +24,11 @@ class SetScript(Command):
         thing.set_script(script_body)
         try:
             self.world.initialize_script(thing, player)
-            return Event('script_saved', {
+            return Event('script-saved', {
                 "thing": thing.to_dict()
                 })
         except saulscript.exceptions.SaulException as saulerror:
-            return Event('script_error', {
+            return Event('script-error', {
                 "error": "Error at line %d: %s" % (saulerror.line_num, saulerror.message)
                 })
 
@@ -49,7 +49,7 @@ class GetScript(Command):
         elif thing_id == player.location.id:
             thing = player.location
         script_body = thing.script_body
-        return Event('script_body', {
+        return Event('script-body', {
             "player_name": args[0],
             "script_body": script_body,
             "thing": thing.to_dict()
