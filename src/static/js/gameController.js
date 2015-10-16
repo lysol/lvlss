@@ -116,6 +116,10 @@ gameController.prototype.dropItem = function(itemId) {
     this.socket.emit('cmd', {command: 'drop', args: [itemId]});
 };
 
+gameController.prototype.copyItem = function(itemId) {
+    this.socket.emit('cmd', {command: 'copy', args: [itemId]});
+};
+
 gameController.prototype.editScript = function(itemId) {
     this.manos.emit('edit-script', {itemId: itemId});
 };
@@ -123,6 +127,5 @@ gameController.prototype.editScript = function(itemId) {
 gameController.prototype.openProperties = function(itemId) {
     this.socket.emit('cmd', {command: 'item_info', args: [itemId]});
 };
-
 
 App.controller('lvlss.gameController', ['$scope', 'socket', '$location', 'manos', gameController]);

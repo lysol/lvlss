@@ -22,7 +22,7 @@ class Take(Command):
             self.send_player_inventory(player)
             self.send_player_status(player)
             logging.debug("emit take event")
-            self.world.emit_event('take', {
+            self.world.emit_scripting_event('take', {
                 'item': item.to_dict(),
                 'player': player.to_dict(),
                 'area': player.location.to_dict()

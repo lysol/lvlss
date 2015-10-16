@@ -30,11 +30,11 @@ class Go(Command):
             old_location.players.remove(player)
             player.location = old_location.links_to[area_id]
             player.location.players.append(player)
-            self.world.emit_event('depart', {
+            self.world.emit_scripting_event('depart', {
                 'area': old_location.to_dict(),
                 'player': player.to_dict()
             }, scope=[old_location])
-            self.world.emit_event('arrive', {
+            self.world.emit_scripting_event('arrive', {
                 'area': player.location.to_dict(),
                 'player': player.to_dict()
             }, scope=[player.location])

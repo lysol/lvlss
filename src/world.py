@@ -64,7 +64,7 @@ class World(object):
         if self.recharge_counter > self.RECHARGE_RATE:
             self.recharge_counter = 0
             self.charge_things()
-            self.emit_event('charge', {'charge': True})
+            self.emit_scripting_event('charge', {'charge': True})
 
     def sync(self):
         logging.info('Syncing...')
@@ -95,6 +95,10 @@ class World(object):
             if obj_id in self.players[p].inventory:
                 return self.players[p].inventory[obj_id]
         return None
+
+    def find_player(self, player_id):
+        if p in self.players:
+            return self.players[p]
 
     def tell_owner(self, source, msg):
         logging.debug("tell_owner: Checking source %s", source)
@@ -255,7 +259,7 @@ class World(object):
 
         return reduce(_in_scope, scope)
 
-    def emit_event(self, name, data, scope=None):
+    def emit_scripting_event(self, name, data, scope=None):
         logging.debug("Emitting event %s", name)
         logging.debug("Event handlers: %s", repr(self.event_handlers))
         if name in self.event_handlers:

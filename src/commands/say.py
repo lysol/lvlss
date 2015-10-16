@@ -11,10 +11,24 @@ class Say(Command):
         if args[0] in self.world.players:
             prefix = "(private) <%s> " % player.name
             # a message to a user
+            msg_base = ' '.join(args[1:])
             msg = prefix + ' '.join(args[1:])
+            target_player = self.find_player(args[0])
             self.tell_player(args[0], msg)
+            self.world.emit_scripting_event('say', {
+                'source': player.to_dict(),
+                'target': target_player.to_dict(),
+                'msg': msg_base
+            }, scope=[target_player])
         else:
             prefix = "<%s> " % player.name
+            msg_base = ' '.join(args)
+            msg = prefix + ' '.join(args)
+
             for p in self.world.players:
-            	msg = prefix + ' '.join(args)
                 self.tell_player(p, msg)
+            self.world.emit_scripting_event('say', {
+                'source': player.to_dict(),
+                'target': player.location.to_dict(),
+                'msg': msg_base
+            }, scope=[player.location, player])

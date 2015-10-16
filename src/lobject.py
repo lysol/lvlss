@@ -1,4 +1,6 @@
 from uuid import uuid4
+import copy
+import random
 
 class LObject:
 
@@ -29,6 +31,12 @@ class LObject:
 
     def set_parent(self, parent):
         self.parent = parent
+
+    def clone(self):
+        copied = copy.deepcopy(self)
+        copied.id = str(uuid4())
+        copied.max_power -= random.randint(0,2)
+        return copied
 
     def __init__(self, name, description=None, value=0, max_power=1000, recharge_rate=50, parent=None):
         self.name = name

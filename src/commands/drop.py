@@ -26,7 +26,7 @@ class Drop(Command):
             # area's inventory, because in this state the object is orphaned
             # and tell_owner will never find anyone to tell about scripting
             # errors, etc.
-            self.world.emit_event('drop', {
+            self.world.emit_scripting_event('drop', {
                 'item': item.to_dict(),
                 'player': player.to_dict(),
                 'area': player.location.to_dict()
