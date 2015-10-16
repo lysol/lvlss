@@ -35,15 +35,19 @@
 
 </div>
 
-<div id="script-editor" class="hidden" ng-controller="lvlss.scriptEditorController as editor">
-    <p><button ng-click="editor.save()">Save</button> <button ng-click="editor.load()">Reset</button> <button ng-click="editor.close()">Close</button></p>
-    <div><span ng-if="editor.scriptMessage.length > 0">{{ editor.scriptMessage }}</span></div>
+<div id="script-editor" ng-controller="lvlss.scriptEditorController as editor" ng-show="editor.itemId !== undefined">
     <p>
-        <textarea class="script-editor" name="script_body" ng-model="editor.scriptBody"></textarea>        
+        <button ng-click="editor.save()">Save</button>
+        <button ng-click="editor.load()">Reset</button>
+        <button ng-click="editor.close()">Close</button>
+        <span ng-if="editor.scriptMessage.length > 0">{{ editor.scriptMessage }}</span>
+    </p>
+    <p>
+        <textarea class="script-body" name="script_body" ng-model="editor.scriptBody"></textarea>        
     </p>
 </div>
 
-<div id="properties" class="hidden" ng-controller="lvlss.propertiesController as properties">
+<div id="properties" ng-controller="lvlss.propertiesController as properties" ng-show="properties.id !== undefined">
     <h2>Properties for {{ properties.name }}</h2>
     <p>
         ID: {{ properties.id }}

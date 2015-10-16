@@ -121,7 +121,7 @@ class World(object):
             if target.signed_in:
                 self.tell_player(target, msg)
         else:
-            logging.error("Tried to tell a bad thing to an unknown thing: ",
+            logging.error("Tried to tell a bad thing to an unknown thing: %s",
                           msg)
 
     def tell_player(self, player, msg):
@@ -216,6 +216,7 @@ class World(object):
         context['nearby_items'] = _nearby_items
 
         def _tell(arg):
+            arg = '<%s> %s' % (thing.name, arg)
             self.tell(initiator, str(arg))
         context['tell'] = _tell
 

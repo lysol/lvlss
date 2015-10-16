@@ -1,6 +1,6 @@
 var propertiesController = function($scope, socket, $location, manos) {
     var self = this;
-    this.id = '';
+    this.id = undefined;
     this.name = '';
     this.manos = manos;
     this.socket = socket;
@@ -20,7 +20,8 @@ propertiesController.prototype.setThing = function(thing) {
 }
 
 propertiesController.prototype.close = function() {
-    this.manos.emit('close-properties', []);
+    this.id = undefined;
+    this.name = '';
 }
 
 App.controller('lvlss.propertiesController', ['$scope', 'socket', '$location', 'manos', propertiesController]);

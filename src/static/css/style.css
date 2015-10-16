@@ -4,7 +4,7 @@
 }
 
 [ng-repeat].ng-enter, [ng-if].ng-enter {
-  transition: 0.25s linear all;
+  transition: 0.1s ease all;
   opacity: 0;
 }
 
@@ -13,13 +13,16 @@
 }
 
 [ng-repeat].ng-leave, [ng-if].ng-leave {
-  transition: 0.25s linear all;
+  transition: 0.1s ease all;
   opacity: 1;
 }
 
 [ng-repeat].ng-leave.ng-leave-active, [ng-if].ng-leave.ng-leave-active {
   opacity: 0;
 }
+
+
+
 
 body {
     font-family: vga;
@@ -92,10 +95,7 @@ ul {
     display: none;
 }
 
-.script-editor {
-    width: 80vw;
-    height: 80vh;
-}
+
 
 .command-holder {
     margin: 1vh 1vw 1vh 0;
@@ -129,3 +129,31 @@ button {
 .player-name {
     color: #FFF;
 }
+
+#properties {
+    width: 40vw;
+    height: 60vh;
+    background-color: rgba(200, 0, 200, 0.85);
+    clear: none;
+    position: absolute;
+    left: 30vw;
+    top: 15vh;
+    padding: 2vh 2vw;
+}
+
+#script-editor {
+    width: 82vw;
+    height: 82vh;
+    background-color: rgba(200, 0, 200, 0.85);
+    clear: none;
+    position: absolute;
+    left: 6.5vw;
+    top: 8vh;
+    padding: 2vh 2vw;
+}
+
+    .script-body {
+        width: 80vw;
+        height: 55vh;
+    }
+

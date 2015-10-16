@@ -38,7 +38,6 @@ scriptEditorController.prototype.load = function() {
 };
 
 scriptEditorController.prototype.close = function() {
-    this.manos.emit('close-editor', []);
     this.scriptMessage = '';
     this.scriptBody = '';
     this.itemId = undefined;

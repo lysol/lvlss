@@ -12,6 +12,7 @@ class CommandException(Exception):
     NEED_A_NUMBER = 6
     BAD_SCRIPT_PATH = 7
     UNKNOWN_ITEM = 8
+    NOT_ENOUGH_CREDITS = 9
 
     messages = {
         0: "Unknown command.",
