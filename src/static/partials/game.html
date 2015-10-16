@@ -36,6 +36,7 @@
 </div>
 
 <div id="script-editor" ng-controller="lvlss.scriptEditorController as editor" ng-show="editor.itemId !== undefined">
+    <h2>Editing script for: <strong>{{ editor.thing.name }}</strong></h2>
     <p>
         <button ng-click="editor.save()">Save</button>
         <button ng-click="editor.load()">Reset</button>
@@ -48,9 +49,12 @@
 </div>
 
 <div id="properties" ng-controller="lvlss.propertiesController as properties" ng-show="properties.id !== undefined">
-    <h2>Properties for {{ properties.name }}</h2>
+    <h2>Properties for {{ properties.thing.name }}</h2>
+    <p>{{ properties.thing.description }}</p>
     <p>
-        ID: {{ properties.id }}
+        ID: {{ properties.id }}<br>
+        Value: {{ properties.value }}<br>
+        <a href="#" ng-click="properties.editScript(properties.id)">Edit Script</a>
     </p>
     <p>
         <button ng-click="properties.close()">Close</button>

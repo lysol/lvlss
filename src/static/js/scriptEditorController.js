@@ -6,6 +6,7 @@ var scriptEditorController = function($scope, socket, $location, manos) {
     this.manos = manos;
     this.socket = socket;
     this.scriptMessage = '';
+    this.thing = undefined;
 
     manos.on('edit-script', $scope, function(evt, data) {
         self.itemId = data.itemId;
@@ -14,6 +15,7 @@ var scriptEditorController = function($scope, socket, $location, manos) {
 
     $scope.$on('script-body', function(evt, data) {
         self.scriptBody = data.script_body;
+        self.thing = data.thing;
     });
 
     $scope.$on('script-error', function(evt, data) {
@@ -41,6 +43,7 @@ scriptEditorController.prototype.close = function() {
     this.scriptMessage = '';
     this.scriptBody = '';
     this.itemId = undefined;
+    this.thing = undefined;
 };
 
 App.controller('lvlss.scriptEditorController', ['$scope', 'socket', '$location', 'manos', scriptEditorController]);
