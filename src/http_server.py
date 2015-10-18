@@ -1,4 +1,4 @@
-from flask import Flask, request, send_from_directory, session, make_response
+from flask import Flask, request, send_from_directory, session, make_response, abort
 from flask.ext.login import current_user, login_user, logout_user, LoginManager
 from flask.ext.socketio import SocketIO, emit, send, join_room, leave_room
 from event import Event
@@ -96,6 +96,10 @@ class LvlssMiddleware(object):
             del(self.sessions[session_id])
         except KeyError:
             logging.debug("Couldn't find user ID for session " + str(session_id))
+
+    def retrieve_content(self, obj_id):
+        return self.controller.world.retrieve_content(obj_id)
+
 
 
 def run_regularly(function, delay=0.25):
@@ -203,6 +207,17 @@ def cmd(data):
         request.namespace.disconnect()
     response_event = cmd_handler.handle_event(current_user, data)
     handle_response(response_event)
+
+
+@app.route('/get-img/<img_id>')
+def get_img(img_id):
+    try:
+        img = cmd_handler.retrieve_content(img_id)
+    except KeyError:
+        img = cmd_handler.retrieve_content('default')
+    response = make_response(img)
+    response.headers['Content-Type'] = 'image/png'
+    return response
 
 
 @app.route("/<path:path>")

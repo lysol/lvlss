@@ -1,4 +1,4 @@
 lvlss
 =====
 
-TODO
+setup.py doesn't work yet.

@@ -2,6 +2,8 @@
 # -*- coding: utf-8 -*- #
 
 import setuptools
+import setuptools.command.install
+
 
 setuptools.setup(name='lvlss',
                  version='0.0.1',
@@ -11,11 +13,9 @@ setuptools.setup(name='lvlss',
                  author_email='derek@derekarnold.net',
                  url='http://github.com/lysol/lvlss',
                  packages=setuptools.find_packages(),
-                 scripts=[
-                    'src/static/*'
-                 ],
                  install_requires=[
                     'flask'
                  ],
                  include_package_data=True,
-                 license='MIT License')
+                 license='MIT License'
+

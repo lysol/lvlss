@@ -48,7 +48,9 @@ var App = angular.module('lvlss', [
             'script-saved',
             'script-error',
             'item-info',
-            'player-status'
+            'player-status',
+            'image-content',
+            'pixel-set'
         ]);
 
         return socket;

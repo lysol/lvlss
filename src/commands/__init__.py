@@ -11,7 +11,8 @@ from make import Make
 from landfill import Landfill
 from item_info import ItemInfo
 from script import SetScript, GetScript
+from image_editing import ImageEditing
 
 all_commands = (Quit, SetName, Who, Say, Look, 
     Go, Take, Inventory, Drop, Make, Landfill, 
-    SetScript, GetScript, ItemInfo)
+    SetScript, GetScript, ItemInfo, ImageEditing)

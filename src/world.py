@@ -2,12 +2,12 @@ from player import Player
 from lobject import LObject
 from area import Area
 from event import Event
+from image_handler import ImageHandler
 import shelve
 import os
 import logging
 import saulscript
 import saulscript.syntax_tree
-
 
 class World(object):
 
@@ -54,6 +54,9 @@ class World(object):
         self.areas[quarry.id] = quarry
         self.areas[quarry_pond.id] = quarry_pond
 
+    def init_content(self):
+        self.image_handler.init_content()
+
     def tick(self):
         # logging.debug("World: tick (%d, %d)", self.sync_counter, self.recharge_counter)
         self.sync_counter += 1
@@ -86,6 +89,9 @@ class World(object):
     def stop(self):
         self.sync()
         self.datastore.close()
+
+    def is_area(self, obj_id):
+        return obj_id in self.areas
 
     def find_object(self, obj_id):
         for l in self.areas:
@@ -303,12 +309,23 @@ class World(object):
         logging.debug(ctx)
         logging.debug(self.script_objects[thing.id])
 
+    def save_content(self, obj_id, thing):
+        if 'content' not in self.datastore:
+            self.datastore['content'] = {}
+        self.datastore['content'][obj_id] = thing
+        self.datastore.sync()
+
+    def retrieve_content(self, obj_id):
+        return self.datastore['content'][obj_id]
+
     def __init__(self, controller, datalocation):
         game_exists = os.path.exists(datalocation + '.db')
         self.datastore = shelve.open(datalocation, writeback=True)
         self.sync_counter = 0
         self.recharge_counter = 0
         self.controller = controller
+        self.image_handler = ImageHandler(self)
+
         if game_exists:
             logging.debug('Loading existing game.')
             self.players = self.datastore['players']
@@ -327,11 +344,13 @@ class World(object):
             self.areas = {}
             self.init_areas()
             self.init_lobjects()
+            self.init_content()
             self.sync()
         self.scripting = saulscript.Context()
         self.script_contexts = {}
         self.script_objects = {}
         self.event_handlers = {}
+
 
         # bootstrap all scripts
         for area in self.areas.values():
