@@ -154,3 +154,31 @@ button {
         font-family: "Anonymous Pro", monospace;
     }
 
+#image-editor {
+    width: 82vw;
+    height: 82vh;
+    background-color: rgba(100, 0, 0, 0.85);
+    clear: none;
+    position: absolute;
+    left: 6.5vw;
+    top: 8vh;
+    padding: 2vh 2vw;
+}
+
+.edit-row {
+    clear: left;
+}
+
+.edit-cell {
+    width: 1vw;
+    height: 1vw;
+    margin: 0 0.1vw 0.1vh 0;
+    border: 0;
+    float: left;
+    background-color: #000;
+}
+
+    .edit-cell.filled {
+        background-color: #FFF;
+    }
+

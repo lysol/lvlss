@@ -26,6 +26,7 @@ class ImageHandler(object):
         inputted = StringIO(image)
         pimg = Image.open(inputted)
         data = [1 if x else 0 for x in list(pimg.getdata())]
+        logging.debug("Image Data: %s", repr(data))
         return data
 
     def set_pixel(self, obj_id, x, y, pix_on=True, dimensions=(32, 32)):

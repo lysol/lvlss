@@ -55,21 +55,22 @@
         ID: {{ properties.id }}<br>
         Value: {{ properties.value }}<br>
         <a href="#" ng-click="properties.editScript(properties.id)">Edit Script</a>
+        <a href="#" ng-click="properties.editImage(properties.id)">Edit Image</a>
     </p>
     <p>
         <button ng-click="properties.close()">Close</button>
     </p>
 </div>
 
-<div id="image-ditor" ng-controller="lvlss.imageEditorController as imageEditor" ng-show="imageEditor.rows !== undefined">
+<div id="image-editor" ng-controller="lvlss.imageEditorController as imageEditor" ng-show="imageEditor.rows !== undefined">
     <h2>Icon Editor</h2>
-    <div class="edit-field" ng-repeat="row in imageEditor.rows track by $index" ng-init="var rowIndex = $index">
-        <div class="edit-row" ng-repeat="cell in row track by $index" ng-init="var cellIndex = $index">
+    <div class="edit-field" ng-repeat="row in imageEditor.rows track by $index" ng-init="rowIndex = $index">
+        <div class="edit-row" ng-repeat="cell in row track by $index" ng-init="cellIndex = $index">
             <div ng-class="{'edit-cell': true, filled: imageEditor.rows[$rowIndex][$cellIndex]}" ng-click="imageEditor.toggle($rowIndex, $cellIndex)"></div>
         </div>
     </div>
 
     <p>
-        <button ng-click="properties.close()">Close</button>
+        <button ng-click="imageEditor.close()">Close</button>
     </p>
 </div>

@@ -31,4 +31,10 @@ propertiesController.prototype.editScript = function(itemId) {
     this.manos.emit('edit-script', {itemId: itemId});
 }
 
+propertiesController.prototype.editImage = function(itemId) {
+    this.id = undefined;
+    this.thing = undefined;
+    this.manos.emit('edit-image', {itemId: itemId});
+}
+
 App.controller('lvlss.propertiesController', ['$scope', 'socket', '$location', 'manos', propertiesController]);

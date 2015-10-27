@@ -5,7 +5,7 @@ from StringIO import StringIO
 
 class ImageEditing(Command):
 
-    @is_command
+    @is_command('get-image')
     def get_image(self, player, *args):
         if len(args) == 0:
             raise CommandException(CommandException.NOT_ENOUGH_ARGUMENTS)
@@ -15,7 +15,10 @@ class ImageEditing(Command):
         else:
             dims = (32, 32)
 
-        data = self.world.image_handler.get_data(obj_id)
+        try:
+            data = self.world.image_handler.get_data(obj_id)
+        except KeyError:
+            data = self.world.image_handler.get_data('default')
         return Event('image-content', {"pixels": data, "dimensions": dims})
 
     @is_command

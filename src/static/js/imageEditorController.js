@@ -4,15 +4,20 @@ var imageEditorController = function($scope, socket, $location, manos) {
     this.manos = manos;
     this.rows = undefined;
 
-    $scope.$on('get-image', function(evt, data) {
-        this.rows = [];
+    $scope.$on('image-content', function(evt, data) {
+        self.rows = [];
         for (var row=0; row<data.dimensions[1]; row++) {
-            this.rows.push([])
+            self.rows.push([])
             for (var cell=0; cell<data.dimensions[0]; cell++) {
-                this.rows[row].push(data.pixels[data.dimensions[1] * row + cell]);
+                self.rows[row].push(data.pixels[data.dimensions[1] * row + cell]);
             }
         }
     });
+
+    manos.on('edit-image', $scope, function(evt, data) {
+        self.itemId = data.itemId;
+        self.load();
+    })
 };
 
 imageEditorController.prototype.toggle = function(x, y) {
@@ -23,6 +28,10 @@ imageEditorController.prototype.toggle = function(x, y) {
 
 imageEditorController.prototype.close = function() {
     this.rows = undefined;
+};
+
+imageEditorController.prototype.load = function() {
+    this.socket.emit('cmd', {command: 'get-image', args: [this.itemId]});
 };
 
 App.controller('lvlss.imageEditorController', ['$scope', 'socket', '$location', 'manos', imageEditorController]);
