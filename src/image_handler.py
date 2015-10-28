@@ -36,7 +36,7 @@ class ImageHandler(object):
             pimg = Image.open(inputted)
         except KeyError:
             pimg = Image.new('RGB', dimensions)
-        pixelmap = image.load()
+        pixelmap = pimg.load()
         output = StringIO()
         pixelmap[x, y] = (255, 255, 255) if pix_on else (0, 0, 0)
         pimg.save(output, format='PNG')

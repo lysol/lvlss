@@ -3,6 +3,7 @@ var imageEditorController = function($scope, socket, $location, manos) {
     this.socket = socket;
     this.manos = manos;
     this.rows = undefined;
+    this.itemId = undefined;
 
     $scope.$on('image-content', function(evt, data) {
         self.rows = [];
@@ -23,7 +24,7 @@ var imageEditorController = function($scope, socket, $location, manos) {
 imageEditorController.prototype.toggle = function(x, y) {
     this.rows[x][y] = !this.rows[x][y];
 
-    this.socket.emit('cmd', {command: 'save_pixel', args: [x, y, this.rows[x][y]]});
+    this.socket.emit('cmd', {command: 'save-pixel', args: [this.itemId, x, y, this.rows[x][y]]});
 };
 
 imageEditorController.prototype.close = function() {

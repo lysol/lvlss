@@ -21,7 +21,7 @@ class ImageEditing(Command):
             data = self.world.image_handler.get_data('default')
         return Event('image-content', {"pixels": data, "dimensions": dims})
 
-    @is_command
+    @is_command('save-pixel')
     def save_pixel(self, player, *args):
         if len(args) < 4:
             raise CommandException(CommandException.NOT_ENOUGH_ARGUMENTS)        

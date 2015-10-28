@@ -213,7 +213,9 @@ def cmd(data):
 def get_img(img_id):
     try:
         img = cmd_handler.retrieve_content(img_id)
+        logging.debug("retrieved image")
     except KeyError:
+        logging.debug("sending default image")
         img = cmd_handler.retrieve_content('default')
     response = make_response(img)
     response.headers['Content-Type'] = 'image/png'
