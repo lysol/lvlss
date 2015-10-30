@@ -97,8 +97,8 @@ class LvlssMiddleware(object):
         except KeyError:
             logging.debug("Couldn't find user ID for session " + str(session_id))
 
-    def retrieve_content(self, obj_id):
-        return self.controller.world.retrieve_content(obj_id)
+    def retrieve_file(self, obj_id):
+        return self.controller.world.retrieve_file(obj_id)
 
 
 
@@ -212,11 +212,11 @@ def cmd(data):
 @app.route('/get-img/<img_id>')
 def get_img(img_id):
     try:
-        img = cmd_handler.retrieve_content(img_id)
+        img = cmd_handler.retrieve_file(img_id)
         logging.debug("retrieved image")
     except KeyError:
         logging.debug("sending default image")
-        img = cmd_handler.retrieve_content('default')
+        img = cmd_handler.retrieve_file('default')
     response = make_response(img)
     response.headers['Content-Type'] = 'image/png'
     return response

@@ -16,10 +16,10 @@ class ImageHandler(object):
         self.world = world
 
     def save_image(self, img_id, img_content):
-        self.world.save_content(img_id, img_content)
+        self.world.save_file(img_id, img_content)
 
     def retrieve_image(self, img_id):
-        return self.world.retrieve_content(img_id)
+        return self.world.retrieve_file(img_id)
 
     def get_data(self, obj_id):
         image = self.retrieve_image(obj_id)
@@ -30,15 +30,18 @@ class ImageHandler(object):
         return data
 
     def set_pixel(self, obj_id, x, y, pix_on=True, dimensions=(32, 32)):
+        logging.debug("Setting pixel for %s at (%d, %d)", obj_id, x, y)
         try:
             image = self.retrieve_image(obj_id)
             inputted = StringIO(image)
             pimg = Image.open(inputted)
         except KeyError:
             pimg = Image.new('RGB', dimensions)
+        pimg.readonly = False
         pixelmap = pimg.load()
         output = StringIO()
         pixelmap[x, y] = (255, 255, 255) if pix_on else (0, 0, 0)
+        logging.debug("Pixelmap: %s", repr(pixelmap[x, y]))
         pimg.save(output, format='PNG')
         self.save_image(obj_id, output.getvalue())
 

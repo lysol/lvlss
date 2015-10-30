@@ -3,6 +3,7 @@ from lobject import LObject
 from area import Area
 from event import Event
 from image_handler import ImageHandler
+from os.path import join
 import shelve
 import os
 import logging
@@ -309,6 +310,25 @@ class World(object):
         logging.debug(ctx)
         logging.debug(self.script_objects[thing.id])
 
+    def save_file(self, obj_id, content):
+        logging.debug('Saving file')
+        files_path = join(self.data_location, 'files')
+        if not os.path.exists(files_path):
+            os.mkdir(files_path)
+        fh = open(join(files_path, obj_id), 'w')
+        fh.write(content)
+        fh.close()
+
+    def retrieve_file(self, obj_id):
+        files_path = join(self.data_location, 'files')
+        target = join(files_path, obj_id)
+        if not os.path.exists(files_path) or not os.path.exists(target):
+            raise KeyError()
+        fh = open(target, 'r')
+        contents = fh.read()
+        fh.close()
+        return contents
+
     def save_content(self, obj_id, thing):
         if 'content' not in self.datastore:
             self.datastore['content'] = {}
@@ -318,13 +338,15 @@ class World(object):
     def retrieve_content(self, obj_id):
         return self.datastore['content'][obj_id]
 
-    def __init__(self, controller, datalocation):
-        game_exists = os.path.exists(datalocation + '.db')
-        self.datastore = shelve.open(datalocation, writeback=True)
+    def __init__(self, controller, data_location):
+        database_path = join(data_location, 'lvlss.db')
+        game_exists = os.path.exists(database_path)
+        self.datastore = shelve.open(database_path, writeback=True)
         self.sync_counter = 0
         self.recharge_counter = 0
         self.controller = controller
         self.image_handler = ImageHandler(self)
+        self.data_location = data_location
 
         if game_exists:
             logging.debug('Loading existing game.')

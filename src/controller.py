@@ -1,4 +1,5 @@
 import logging
+import os
 from world import World
 import commands
 from command import CommandException
@@ -62,11 +63,13 @@ class Controller(object):
     def remove_player(self, name):
         self.world.remove_player(name)
 
-    def __init__(self, server, datalocation=None):
-        if datalocation is None:
+    def __init__(self, server, data_location=None):
+        if data_location is None:
             from os.path import join, expanduser
-            datalocation = join(expanduser('~'), '.lvlss')
-        self.world = World(self, datalocation)
+            data_location = join(expanduser('~'), 'lvlss/')
+            if not os.path.exists(data_location):
+                os.mkdir(data_location)
+        self.world = World(self, data_location)
         self.commands = []
         self.initialize_commands()
         self.server = server
