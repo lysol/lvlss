@@ -25,7 +25,7 @@ class ImageHandler(object):
         image = self.retrieve_image(obj_id)
         inputted = StringIO(image)
         pimg = Image.open(inputted)
-        data = [1 if x else 0 for x in list(pimg.getdata())]
+        data = [1 if x[0] == 255 else 0 for x in list(pimg.getdata())]
         logging.debug("Image Data: %s", repr(data))
         return data
 
