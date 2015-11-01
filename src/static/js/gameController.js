@@ -22,6 +22,9 @@ var gameController = function($scope, socket, $location, manos) {
 
     $scope.$on('location-inventory', function(evt, data) {
         self.location_items = data.inventory;
+        for(var i in self.location_items) {
+            self.location_items[i].token = Math.floor(Math.random() * 1000000);
+        }
     });
 
     $scope.$on('location-areas', function(evt, data) {
@@ -30,6 +33,9 @@ var gameController = function($scope, socket, $location, manos) {
 
     $scope.$on('inventory', function(evt, data) {
         self.inventory = data.inventory;
+        for(var i in self.inventory) {
+            self.inventory[i].token = Math.floor(Math.random() * 1000000);
+        }        
     });
 
     $scope.$on('player-status', function(evt, data) {
@@ -37,8 +43,47 @@ var gameController = function($scope, socket, $location, manos) {
         self.player.credits = data.player.credits;
     });
 
+    $scope.updateItemToken = function(itemId) {
+        self.updateItemToken(itemId);
+    };
+
 };
 
+gameController.prototype.itemCallback = function(itemId, func) {
+    for(var i in this.inventory) {
+        if (this.inventory[i].id == itemId) {
+            // found the item.
+            return func(this.inventory[i]);
+        }
+    }
+    // ok, so check the stuff on the ground
+    for(var i in this.location_items) {
+        if (this.location_items[i].id == itemId) {
+            // it's here
+            return func(this.location_items[i]);
+        }
+    }
+    return undefined;
+};
+
+gameController.prototype.updateItemToken = function(itemId) {
+    this.itemCallback(itemId, function(item) {
+        item.token = Math.floor(Math.random() * 1000000);
+    });
+};
+
+gameController.prototype.getItemURL = function(itemId) {
+    return this.itemCallback(itemId, function(item) {
+        // send a black square
+        if (item === undefined) {
+            return '/get-img/default';
+        }
+        // send the id + token so if it's changed, the image is refreshed
+        return '/get-img/' + item.id + '?' + item.token;
+    });
+};
+
+// Spits stuff onto the main output log
 gameController.prototype.addCrap = function(crap) {
     if (typeof crap === 'string') {
         crap = [crap];

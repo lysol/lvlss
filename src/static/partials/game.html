@@ -13,7 +13,7 @@
         </ul>
         <h3 ng-if="game.location_items.length > 0">Items here:</h3>
         <ul class="items" ng-repeat="item in game.location_items track by item.id">
-            <li><img class="item-image" ng-src="/get-img/{{ item.id }}"> {{ item.name }} <a href="#" ng-click="game.takeItem(item.id)">take</a> <a href="#" ng-click="game.openProperties(item.id)">look</a></li>
+            <li><img ng-reload-image class="item-image" ng-attr-id="{{ item.id }}" ng-src="{{ game.getItemURL(item.id) }}"> {{ item.name }} <a href="#" ng-click="game.takeItem(item.id)">take</a> <a href="#" ng-click="game.openProperties(item.id)">look</a></li>
         </ul>
     </section>
     <section class="game-cell one-half" scroll-glue>
@@ -29,14 +29,14 @@
         </p>
         <h3 ng-if="game.inventory.length > 0">Inventory:</h3>
         <ul class="items" ng-repeat="item in game.inventory track by item.id">
-            <li><img class="item-image" ng-src="/get-img/{{ item.id }}"> {{ item.name }} <a href="#" ng-click="game.dropItem(item.id)">drop</a> <a href="#" ng-click="game.editScript(item.id)">script</a> <a href="#" ng-click="game.openProperties(item.id)">look</a> <a href="#" ng-click="game.copyItem(item.id)">copy</a></li>
+            <li><img ng-reload-image class="item-image" ng-attr-id="{{ item.id }}" ng-src="{{ game.getItemURL(item.id) }}"> {{ item.name }} <a href="#" ng-click="game.dropItem(item.id)">drop</a> <a href="#" ng-click="game.editScript(item.id)">script</a> <a href="#" ng-click="game.openProperties(item.id)">look</a> <a href="#" ng-click="game.copyItem(item.id)">copy</a></li>
         </ul>
     </section>
 
 </div>
 
 <div id="script-editor" ng-controller="lvlss.scriptEditorController as editor" ng-show="editor.itemId !== undefined">
-    <h2>Editing script for: <img class="item-image" ng-src="/get-img/{{editor.thing.id}}"> <strong>{{ editor.thing.name }}</strong></h2>
+    <h2>Editing script for: <img ng-reload-image class="item-image" ng-attr-id="{{ item.id }}" ng-src="{{ game.getItemURL(editor.thing.id) }}"> <strong>{{ editor.thing.name }}</strong></h2>
     <p>
         <button ng-click="editor.save()">Save</button>
         <button ng-click="editor.load()">Reset</button>
@@ -62,11 +62,11 @@
     </p>
 </div>
 
-<div id="image-editor" ng-controller="lvlss.imageEditorController as imageEditor" ng-show="imageEditor.rows !== undefined">
+<div id="image-editor" ng-controller="lvlss.imageEditorController as imageEditor" ng-show="imageEditor.rows !== undefined" ng-mouseup="imageEditor.stopPainting()">
     <h2>Icon Editor</h2>
     <div class="edit-field">
         <div class="edit-row" ng-repeat="row in imageEditor.rows track by $index" ng-init="rowIndex = $index">
-            <div ng-repeat="cell in row track by $index" ng-init="cellIndex = $index" ng-class="{'edit-cell': true, filled: imageEditor.rows[rowIndex][cellIndex]}" ng-click="imageEditor.toggle(rowIndex, cellIndex)"></div>
+            <div ng-repeat="cell in row track by $index" ng-init="cellIndex = $index" ng-class="{'edit-cell': true, filled: imageEditor.rows[rowIndex][cellIndex]}" ng-mouseenter="imageEditor.checkPaint(rowIndex, cellIndex)" ng-click="imageEditor.startPainting(rowIndex, cellIndex)"></div>
         </div>
     </div>
 

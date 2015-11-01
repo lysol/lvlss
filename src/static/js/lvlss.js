@@ -70,6 +70,20 @@ var App = angular.module('lvlss', [
         };
     })
 
+    .directive('ngReloadImage', ['$rootScope', function($rootScope) {
+        return {
+            scope: false,
+            link: function(scope, element, attrs) {
+                scope.$on('reload-image', function(ev, data){
+                    if (attrs.id == data.itemId) {
+                        // image ID matches, reload it
+                        scope.$parent.updateItemToken(data.itemId);
+                    }
+                });
+            }
+        };
+    }])
+
     // * * * THE HANDS OF FATE * * *
     .factory('manos', ['$rootScope', function($rootScope) {
         var manos = {};
