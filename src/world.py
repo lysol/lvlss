@@ -4,6 +4,7 @@ from area import Area
 from event import Event
 from image_handler import ImageHandler
 from os.path import join
+import shutil
 import shelve
 import os
 import logging
@@ -310,6 +311,9 @@ class World(object):
         logging.debug(ctx)
         logging.debug(self.script_objects[thing.id])
 
+    def file_exists(self, obj_id):
+        return os.path.exists(join(self.data_location, 'files', obj_id))
+
     def save_file(self, obj_id, content):
         logging.debug('Saving file')
         files_path = join(self.data_location, 'files')
@@ -328,6 +332,12 @@ class World(object):
         contents = fh.read()
         fh.close()
         return contents
+
+    def copy_file(self, old_id, new_id):
+        src = join(self.data_location, 'files', old_id)
+        dst = join(self.data_location, 'files', new_id)
+        shutil.copyfile(src, dst)
+        return True
 
     def save_content(self, obj_id, thing):
         if 'content' not in self.datastore:

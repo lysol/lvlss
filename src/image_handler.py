@@ -21,6 +21,11 @@ class ImageHandler(object):
     def retrieve_image(self, img_id):
         return self.world.retrieve_file(img_id)
 
+    def copy_image(self, old_id, new_id):
+        if not self.world.file_exists(old_id):
+            old_id = 'default'
+        self.world.copy_file(old_id, new_id)
+
     def get_data(self, obj_id):
         image = self.retrieve_image(obj_id)
         inputted = StringIO(image)

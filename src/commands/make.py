@@ -50,6 +50,7 @@ class Make(Command):
         if original.parent.id != player.id:
             raise CommandException(CommandException.NO_ITEM_IN_INVENTORY)
         copied = original.clone()
+        self.world.image_handler.copy_image(original.id, copied.id)
 
         player.inventory[copied.id] = copied
         player.credits -= 1
