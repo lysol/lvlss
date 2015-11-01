@@ -18,13 +18,33 @@ class ImageHandler(object):
     def save_image(self, img_id, img_content):
         self.world.save_file(img_id, img_content)
 
+    def save_image_2x(self, img_id):
+        x2 = img_id + '_2x'
+        image = self.retrieve_image(img_id)
+        inputted = StringIO(image)
+        pimg = Image.open(inputted)
+        newimg = pimg.resize([x * 2 for x in pimg.size], Image.NEAREST)
+        output = StringIO()
+        newimg.save(output, format='PNG')
+        self.world.save_file(x2, output.getvalue())
+
     def retrieve_image(self, img_id):
         return self.world.retrieve_file(img_id)
+
+    def retrieve_image_2x(self, img_id):
+        x2 = img_id + '_2x'
+        if not self.world.file_exists(x2):
+            self.save_image_2x(img_id)
+        logging.debug("Sending %s", x2)
+        return self.world.retrieve_file(x2)
 
     def copy_image(self, old_id, new_id):
         if not self.world.file_exists(old_id):
             old_id = 'default'
+        old_id_2x = old_id + '_2x'
+        new_id_2x = new_id + '_2x'
         self.world.copy_file(old_id, new_id)
+        self.world.copy_file(old_id_2x, new_id_2x)
 
     def get_data(self, obj_id):
         image = self.retrieve_image(obj_id)
@@ -65,4 +85,5 @@ class ImageHandler(object):
         self.world.datastore['content'] = dict()
         self.world.datastore.sync()
         self.set_data('default', [0 for x in range(32)] * 32)
+        self.set_data('default_2x', [0 for x in range(64)] * 64, (64, 64))
 

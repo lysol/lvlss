@@ -98,8 +98,7 @@ class LvlssMiddleware(object):
             logging.debug("Couldn't find user ID for session " + str(session_id))
 
     def retrieve_file(self, obj_id):
-        return self.controller.world.retrieve_file(obj_id)
-
+        return self.controller.world.image_handler.retrieve_image_2x(obj_id)
 
 
 def run_regularly(function, delay=0.25):
