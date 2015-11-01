@@ -40,7 +40,7 @@ class ImageHandler(object):
         pimg.readonly = False
         pixelmap = pimg.load()
         output = StringIO()
-        pixelmap[x, y] = (255, 255, 255) if pix_on else (0, 0, 0)
+        pixelmap[y, x] = (255, 255, 255) if pix_on else (0, 0, 0)
         logging.debug("Pixelmap: %s", repr(pixelmap[x, y]))
         pimg.save(output, format='PNG')
         self.save_image(obj_id, output.getvalue())
